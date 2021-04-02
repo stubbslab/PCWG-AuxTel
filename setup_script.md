@@ -30,7 +30,7 @@ pip install -e .
 
 
 cd $HOME/repos  
-git clone https://github.com/lsst-dm/obs_base.git  
+git clone https://github.com/lsst/obs_base.git  
 cd obs_base  
 setup -j -r .  
 git checkout tickets/DM-26719  
@@ -38,7 +38,7 @@ scons opt=3 -j 4
 
 
 cd $HOME/repos  
-git clone https://github.com/lsst-dm/obs_lsst.git  
+git clone https://github.com/lsst/obs_lsst.git  
 cd obs_lsst  
 setup -j -r .  
 git checkout tickets/DM-26719  
