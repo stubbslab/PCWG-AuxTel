@@ -16,7 +16,7 @@ Currently recommended stack version: w_2021_13
 Currently recommended rerun location for processed data: /project/shared/auxTel/rerun/mfl/binning4/  
 
 Packages and relevant tickets in pseudo-script form:
-
+ 
 
 mkdir -p $HOME/repos
 
