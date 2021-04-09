@@ -23,7 +23,7 @@ mkdir -p $HOME/repos
 cd $HOME/repos  
 git clone https://github.com/lsst-dm/Spectractor.git  
 cd Spectractor  
-git checkout tickets/DM-28773  
+git checkout tickets/DM-29598  
 git pull  
 pip install -r requirements.txt  
 pip install -e .  
