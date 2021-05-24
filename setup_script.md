@@ -23,7 +23,8 @@ mkdir -p $HOME/repos
 cd $HOME/repos  
 git clone https://github.com/lsst-dm/Spectractor.git  
 cd Spectractor  
-git checkout tickets/DM-29598  
+git fetch --all  
+git reset origin/tickets/DM-29598 --hard  
 git pull  
 pip install -r requirements.txt  
 pip install -e .  
@@ -33,7 +34,8 @@ cd $HOME/repos
 git clone https://github.com/lsst/obs_base.git  
 cd obs_base  
 setup -j -r .  
-git checkout tickets/DM-26719  
+git fetch --all
+git reset origin/tickets/DM-26719 --hard  
 scons opt=3 -j 4  
 
 
@@ -41,16 +43,18 @@ cd $HOME/repos
 git clone https://github.com/lsst/obs_lsst.git  
 cd obs_lsst  
 setup -j -r .  
-git checkout tickets/DM-26719  
+git fetch --all  
+git reset origin/tickets/DM-26719 --hard  
 scons opt=3 -j 4  
 
 
 cd $HOME/repos  
 git clone https://github.com/lsst-dm/atmospec.git  
 cd atmospec  
+git fetch --all  
+git reset origin/tickets/DM-26719 --hard  
 setup -j -r .  
 scons opt=3 -j 4  
-git checkout tickets/DM-26719  
 
 
 cd $HOME/repos  
@@ -58,5 +62,6 @@ git clone https://github.com/lsst-sitcom/rapid_analysis.git
 cd rapid_analysis  
 setup -j -r .  
 scons opt=3 -j 4  
-git checkout tickets/DM-21412  
+git fetch --all  
+git reset origin/tickets/DM-21412 --hard  
 
