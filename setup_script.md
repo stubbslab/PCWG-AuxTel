@@ -12,7 +12,7 @@ So, if things aren't working:
 The following list of packages and ticket branches is given in a such a form that you can copy and paste them in.
 Do note that because this is a work-in-progress and you're building off of ticket branches that the scons line won't always return without errors, and that sometimes I put it before the git checkout, and sometimes after, depending on whether I think it will succeed or not.
 
-Currently recommended stack version: w_2021_19
+Currently recommended stack version: w_2021_21
 Currently recommended rerun location for processed data: /project/shared/auxTel/rerun/mfl/binning4/  
 
 Packages and relevant tickets in pseudo-script form:
