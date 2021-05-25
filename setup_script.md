@@ -34,7 +34,7 @@ cd $HOME/repos
 git clone https://github.com/lsst/obs_base.git  
 cd obs_base  
 setup -j -r .  
-git fetch --all
+git fetch --all  
 git reset origin/tickets/DM-26719 --hard  
 scons opt=3 -j 4  
 
