@@ -12,7 +12,7 @@ So, if things aren't working:
 The following list of packages and ticket branches is given in a such a form that you can copy and paste them in.
 Do note that because this is a work-in-progress and you're building off of ticket branches that the scons line won't always return without errors, and that sometimes I put it before the git checkout, and sometimes after, depending on whether I think it will succeed or not.
 
-Currently recommended stack version: w_2021_21
+Currently recommended stack version: w_2021_21  
 Currently recommended rerun location for processed data: /project/shared/auxTel/rerun/mfl/binning4/  
 
 Packages and relevant tickets in pseudo-script form:
@@ -24,7 +24,8 @@ cd $HOME/repos
 git clone https://github.com/lsst-dm/Spectractor.git  
 cd Spectractor  
 git fetch --all  
-git reset origin/tickets/DM-29598 --hard  
+git checkout tickets/DM-29598  
+git reset --hard origin  
 git pull  
 pip install -r requirements.txt  
 pip install -e .  
@@ -33,18 +34,22 @@ pip install -e .
 cd $HOME/repos  
 git clone https://github.com/lsst/obs_base.git  
 cd obs_base  
-setup -j -r .  
 git fetch --all  
-git reset origin/tickets/DM-26719 --hard  
+git checkout tickets/DM-26719  
+git reset origin --hard  
+git pull  
+setup -j -r .  
 scons opt=3 -j 4  
 
 
 cd $HOME/repos  
 git clone https://github.com/lsst/obs_lsst.git  
 cd obs_lsst  
-setup -j -r .  
 git fetch --all  
-git reset origin/tickets/DM-26719 --hard  
+git checkout tickets/DM-26719  
+git reset origin --hard  
+git pull  
+setup -j -r .  
 scons opt=3 -j 4  
 
 
@@ -52,7 +57,9 @@ cd $HOME/repos
 git clone https://github.com/lsst-dm/atmospec.git  
 cd atmospec  
 git fetch --all  
-git reset origin/tickets/DM-26719 --hard  
+git checkout tickets/DM-26719  
+git reset origin --hard  
+git pull  
 setup -j -r .  
 scons opt=3 -j 4  
 
@@ -63,5 +70,6 @@ cd rapid_analysis
 setup -j -r .  
 scons opt=3 -j 4  
 git fetch --all  
-git reset origin/tickets/DM-21412 --hard  
-
+git checkout tickets/DM-21412  
+git reset origin --hard  
+git pull  
