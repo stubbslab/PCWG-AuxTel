@@ -1,75 +1,115 @@
+**IMPORTANT - READ FIRST:**  
+This guide is for setting up the current nominal working environment.
+If you have made code changes to the packages mentioned which you want to keep: **do not run these instructions**.
+If you're a DESC person doing analysis work, or are unsure if this applies to you, it most likely doesn't, so don't panic, and read on :)
+
+Rough work-flow:
+1. Open Cisco VPN, connect to NCSA
+2. Open the RSP: https://lsst-lsp-stable.ncsa.illinois.edu/
+3. Select the correct container version (see below), and at least a Medium container
+4. Open a terminal and setup the stack (see below)
+5. 
+    * First time: follow the setup instructions for cloning and setting up packages
+    * subsequent times: you only need to do the `git checkout <branchname>` (if the branch has changed), but then _always_ `git fetch --all` and `git reset --hard origin/tickets/DM-<nnnnn>`.
+6. Check your `.user_setups` file (see below for instructions)
+
 These are the package versions currently required for interfacing with the data.
-I (Merlin) endeavor to keep this up-to-date as ticket versions change and branches merge, but there will surely be times when I forget.
+Merlin endeavors to keep this up-to-date as ticket versions change and branches merge, but there will surely be times when I forget.
 So, if things aren't working:
 
-1) Check that you've got all these packages checked out, _and_ setup so that they're being used by your kernel (_i.e._ in your notebooks.user_setups file)
-2) Check that you're on the right branches of all the packages listed below
-3) Check that you've done a git pull
+1. Check that you've got all these packages checked out, _and_ setup so that they're being used by your kernel (_i.e._ check your notebooks.user_setups file is correct).
+2. Check that you're on the right branches of all the packages listed below.
+3. Check that you've done the `git fetch --all` and `git reset --hard` parts, as these are the parts that will pull in the changes.
     - if you do a git pull and it doesn't Just Work™ *AND* you haven't made any code changes in that package, then you can almost certainly fix the problem by doing:
-    git reset --hard origin && git checkout tickets/\<DM-whatever\> && git pull
-    but do note that if you've made code changes to the repo that these will be lost.
 
-The following list of packages and ticket branches is given in a such a form that you can copy and paste them in.
-Do note that because this is a work-in-progress and you're building off of ticket branches that the scons line won't always return without errors, and that sometimes I put it before the git checkout, and sometimes after, depending on whether I think it will succeed or not.
+Stack setup
+-----------
+In a terminal, just do:
+```
+source ${LOADSTACK}
+setup lsst_distrib
+```
 
-Currently recommended stack version: w_2021_21  
-Currently recommended rerun location for processed data: /project/shared/auxTel/rerun/mfl/binning4/  
+User setups file
+----------------
+Edited, using your favorite command line editor, with  
+`<vi/emacs/ed> ${HOME}/notebooks/.user_setups`  
+You should have one line per package we're setting up for each package listed below (except Spectractor), so your file should look like:
+```
+setup -j atmospec -r $HOME/repos/atmospec
+setup -j obs_base -r $HOME/repos/obs_base
+setup -j obs_lsst -r $HOME/repos/obs_lsst
+setup -j rapid_analysis -r $HOME/repos/rapid_analysis
+```
+NB: You do not need to include (and must _not_ include) an entry like that for Spectractor. [^1] 
 
+Versions: packages, the stack, reductions
+-----------------------------------------
+List of packages and their associated tickets:  
+```
+atmospec: tickets/DM-26719
+obs_base: tickets/DM-26719
+obs_lsst: tickets/DM-26719
+rapid_analysis: tickets/DM-21412
+Spectractor: tickets/DM-29598
+```
+Currently recommended stack version: `w_2021_21`  
+Currently recommended rerun location for processed data: `/project/shared/auxTel/rerun/mfl/binning4/`
+
+
+Pseudoscript
+------------
+
+The following pseudo-script of the packages listed above is given for convenience in a such a form that you can probably copy and paste it in.
 Packages and relevant tickets in pseudo-script form:
 
-
+```
 mkdir -p $HOME/repos
 
-cd $HOME/repos  
-git clone https://github.com/lsst-dm/Spectractor.git  
-cd Spectractor  
-git fetch --all  
-git checkout tickets/DM-29598  
-git reset --hard origin  
-git pull  
-pip install -r requirements.txt  
-pip install -e .  
+cd $HOME/repos
+git clone https://github.com/lsst-dm/Spectractor.git
+cd Spectractor
+git fetch --all
+git reset --hard origin/tickets/DM-29598
+git pull
+pip install -r requirements.txt
+pip install -e .
 
+cd $HOME/repos
+git clone https://github.com/lsst/obs_base.git
+cd obs_base
+setup -j -r .
+git fetch --all
+git reset --hard origin/tickets/DM-26719
+scons opt=3 -j 4
 
-cd $HOME/repos  
-git clone https://github.com/lsst/obs_base.git  
-cd obs_base  
-git fetch --all  
-git checkout tickets/DM-26719  
-git reset origin --hard  
-git pull  
-setup -j -r .  
-scons opt=3 -j 4  
+cd $HOME/repos
+git clone https://github.com/lsst/obs_lsst.git
+cd obs_lsst
+setup -j -r .
+git fetch --all
+git reset --hard origin/tickets/DM-26719
+scons opt=3 -j 4
 
+cd $HOME/repos
+git clone https://github.com/lsst-dm/atmospec.git
+cd atmospec
+git fetch --all
+git reset --hard origin/tickets/DM-26719
+setup -j -r .
+scons opt=3 -j 4
 
-cd $HOME/repos  
-git clone https://github.com/lsst/obs_lsst.git  
-cd obs_lsst  
-git fetch --all  
-git checkout tickets/DM-26719  
-git reset origin --hard  
-git pull  
-setup -j -r .  
-scons opt=3 -j 4  
+cd $HOME/repos
+git clone https://github.com/lsst-sitcom/rapid_analysis.git
+cd rapid_analysis
+setup -j -r .
+scons opt=3 -j 4
+git fetch --all
+git reset --hard origin/tickets/DM-21412
+```
 
+Footnotes
+---------
+[^1]: Spectractor and the `.user_setups` file: the entries in that file tell your notebook kernel which package versions to setup for packages managed via `eups`. Spectractor is currently installed via `pip` and therefore does not need an entry. This will likely change in the future, at which point these instructions will be updated accordingly.
 
-cd $HOME/repos  
-git clone https://github.com/lsst-dm/atmospec.git  
-cd atmospec  
-git fetch --all  
-git checkout tickets/DM-26719  
-git reset origin --hard  
-git pull  
-setup -j -r .  
-scons opt=3 -j 4  
-
-
-cd $HOME/repos  
-git clone https://github.com/lsst-sitcom/rapid_analysis.git  
-cd rapid_analysis  
-setup -j -r .  
-scons opt=3 -j 4  
-git fetch --all  
-git checkout tickets/DM-21412  
-git reset origin --hard  
-git pull  
+Because this is a work-in-progress and you're building ticket branches, the `scons`, which runs the tests, won't necessarily always return without errors, and that sometimes I put it before the git checkout, and sometimes after, depending on whether I think it will succeed or not.
