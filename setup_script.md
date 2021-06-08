@@ -54,7 +54,7 @@ rapid_analysis: tickets/DM-21412
 Spectractor: tickets/DM-29598
 ```
 Currently recommended stack version: `w_2021_21`  
-Currently recommended rerun location for processed data: `/project/shared/auxTel/rerun/mfl/binning4/`
+Currently recommended rerun location for processed data: `/project/shared/auxTel/rerun/mfl/slurmRun/`
 
 
 Pseudoscript
