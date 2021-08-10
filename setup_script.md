@@ -37,7 +37,6 @@ Edited, using your favorite command line editor, with
 You should have one line per package we're setting up for each package listed below (except Spectractor), so your file should look like:
 ```
 setup -j atmospec -r $HOME/repos/atmospec
-setup -j obs_lsst -r $HOME/repos/obs_lsst
 setup -j rapid_analysis -r $HOME/repos/rapid_analysis
 ```
 NB: You do not need to include (and must _not_ include) an entry like that for Spectractor [^1] , or any other packages, unless you know what you're doing and it's intentional.
@@ -47,11 +46,10 @@ Versions: packages, the stack, reductions
 List of packages and their associated tickets:  
 ```
 atmospec: master
-obs_lsst: tickets/DM-30932
 rapid_analysis: tickets/DM-30925
 Spectractor: tickets/DM-29598
 ```
-Currently recommended stack version: `w_2021_26`  
+Currently recommended stack version: `w_2021_32`  
 Currently recommended rerun location for processed data: `/project/shared/auxTel/rerun/mfl/slurmRun/`
 
 
@@ -72,14 +70,6 @@ git reset --hard origin/tickets/DM-29598
 git pull
 pip install -r requirements.txt
 pip install -e .
-
-cd $HOME/repos
-git clone https://github.com/lsst/obs_lsst.git
-cd obs_lsst
-setup -j -r .
-git fetch --all
-git reset --hard origin/tickets/DM-30932
-scons opt=3 -j 4
 
 cd $HOME/repos
 git clone https://github.com/lsst-dm/atmospec.git
