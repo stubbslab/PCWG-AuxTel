@@ -36,6 +36,7 @@ Edited, using your favorite command line editor, with
 `<vi/emacs/ed> ${HOME}/notebooks/.user_setups`  
 You should have one line per package we're setting up for each package listed below (except Spectractor), so your file should look like:
 ```
+setup -j daf_butler -r $HOME/repos/daf_butler
 setup -j atmospec -r $HOME/repos/atmospec
 setup -j rapid_analysis -r $HOME/repos/rapid_analysis
 ```
@@ -45,11 +46,12 @@ Versions: packages, the stack, reductions
 -----------------------------------------
 List of packages and their associated tickets:  
 ```
+daf_butler: tickets/DM-31623
 atmospec: master
-rapid_analysis: tickets/DM-30925
+rapid_analysis: tickets/DM-31522
 Spectractor: tickets/DM-29598
 ```
-Currently recommended stack version: `w_2021_32`  
+Currently recommended stack version: `w_2021_36`  
 Currently recommended rerun location for processed data: `/project/shared/auxTel/rerun/mfl/slurmRun/`
 
 
@@ -72,6 +74,14 @@ pip install -r requirements.txt
 pip install -e .
 
 cd $HOME/repos
+git clone https://github.com/lsst/daf_butler.git
+cd daf_butler
+git fetch --all
+git reset --hard origin/DM-31623
+setup -j -r .
+scons opt=3 -j 4
+
+cd $HOME/repos
 git clone https://github.com/lsst-dm/atmospec.git
 cd atmospec
 git fetch --all
@@ -85,7 +95,7 @@ cd rapid_analysis
 setup -j -r .
 scons opt=3 -j 4
 git fetch --all
-git reset --hard origin/tickets/DM-30925
+git reset --hard origin/tickets/DM-31522
 ```
 
 Footnotes
