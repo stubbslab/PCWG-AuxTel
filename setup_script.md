@@ -77,7 +77,7 @@ cd $HOME/repos
 git clone https://github.com/lsst/daf_butler.git
 cd daf_butler
 git fetch --all
-git reset --hard origin/DM-31623
+git reset --hard origin/tickets/DM-31623
 setup -j -r .
 scons opt=3 -j 4
 
