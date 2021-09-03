@@ -46,7 +46,7 @@ Versions: packages, the stack, reductions
 -----------------------------------------
 List of packages and their associated tickets:  
 ```
-daf_butler: tickets/DM-31623
+daf_butler: tickets/DM-31623_pin
 atmospec: master
 rapid_analysis: tickets/DM-31522
 Spectractor: tickets/DM-29598
@@ -77,7 +77,7 @@ cd $HOME/repos
 git clone https://github.com/lsst/daf_butler.git
 cd daf_butler
 git fetch --all
-git reset --hard origin/tickets/DM-31623
+git reset --hard origin/tickets/DM-31623_pin
 setup -j -r .
 scons opt=3 -j 4
 
