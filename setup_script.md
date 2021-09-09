@@ -39,6 +39,7 @@ You should have one line per package we're setting up for each package listed be
 setup -j daf_butler -r $HOME/repos/daf_butler
 setup -j atmospec -r $HOME/repos/atmospec
 setup -j rapid_analysis -r $HOME/repos/rapid_analysis
+setup -j obs_lsst -r $HOME/repos/obs_lsst
 ```
 NB: You do not need to include (and must _not_ include) an entry like that for Spectractor [^1] , or any other packages, unless you know what you're doing and it's intentional.
 
@@ -50,6 +51,7 @@ daf_butler: tickets/DM-31623_pin
 atmospec: master
 rapid_analysis: tickets/DM-31522
 Spectractor: tickets/DM-29598
+obs_lsst: tickets/DM-31640_pin
 ```
 Currently recommended stack version: `w_2021_36`  
 Currently recommended rerun location for processed data: `/project/shared/auxTel/rerun/mfl/slurmRun/`
@@ -96,6 +98,14 @@ setup -j -r .
 scons opt=3 -j 4
 git fetch --all
 git reset --hard origin/tickets/DM-31522
+
+cd $HOME/repos
+git clone https://github.com/lsst/obs_lsst.git
+cd obs_lsst
+setup -j -r .
+scons opt=3 -j 4
+git fetch --all
+git reset --hard origin/tickets/DM-31640_pin
 ```
 
 Footnotes
