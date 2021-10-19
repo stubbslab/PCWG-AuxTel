@@ -20,9 +20,9 @@ def Findcircles(obs_Date, seq_List, do_plot= 0, config = "None"):
     ''' Here we look if a config dictionary is passed, if not then we will 
     use the default values. '''
     if config != "None":
-        configs = config 
+        config = config 
     else:
-        configs = { "Halfbox" : 1200, "kernel": 61, "minclip" : 0.1,
+        config = { "Halfbox" : 1200, "kernel": 61, "minclip" : 0.1,
                     "maxclip": 0.5}
 
     for seq_Num in seq_List:
