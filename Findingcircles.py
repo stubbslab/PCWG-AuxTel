@@ -6,8 +6,7 @@ import numpy as np
 import numpy.ma as ma
 import copy
 from lsst.rapid.analysis.imageExaminer import ImageExaminer
-%matplotlib inline
-centration=[]
+
 
 def Findcircles(obs_Date, seq_List, do_plot= 0, config = "None"):
     """
