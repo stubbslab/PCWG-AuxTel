@@ -99,7 +99,7 @@ def FindCircle(exp, config, do_plot = 0):
     origintimage=copy.deepcopy(intimage) # keep a pristine one for later
         
     if do_plot == 1:
-        plt.imshow(intimage, extent=[0, 2*configs["Halfbox"] 0, 2*configs["Halfbox"]], origin='lower',
+        plt.imshow(intimage, extent=[0, 2*configs["Halfbox"], 0, 2*configs["Halfbox"]], origin='lower',
            cmap='RdGy')
         plt.colorbar()
         plt.show()
