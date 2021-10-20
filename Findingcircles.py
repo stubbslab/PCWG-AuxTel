@@ -42,7 +42,7 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         the dispalcement along the y-axis for all exposures.
     """
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
-    #EFDlist = []
+    EFDlist = []
     dxArray = []
     dyArray = []
 
@@ -61,13 +61,13 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         outercircle, innercircle = FindCircle(exp, config, do_plot)
         centrationoffset = outercircle - innercircle
         print(f"Seq_num: {seq_Num}, dx_offset={centrationoffset[0,0]}, dy_offset={centrationoffset[0,1]}")
-        #expId, position = getEFDinfo(obs_Date, seq_Num)
+        expId, position = getEFDinfo(obs_Date, seq_Num)
 
-        #EFDlist.append([expId, position])
-        dxArray.append(centrationoffset[0,0])
-        dyArray.append(centrationoffset[0,1])
+        EFDlist.append([expId, position])
+        dxArray.append(centrationoffset[0, 0])
+        dyArray.append(centrationoffset[0, 1])
 
-    return dxArray, dyArray
+    return EFDlist, dxArray, dyArray
 
 
 def FindCircle(exp, config, do_plot=0):
