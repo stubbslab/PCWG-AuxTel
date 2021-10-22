@@ -152,10 +152,10 @@ def FindCircle(exp, config, do_plot=0):
         circle = np.round(circle[0,:]).astype(int)
         return circle
 
-    params_big = {'param1': 10, 'param2': 10, 'minRadius': 0.8*config['outer_radius'],
-                    'maxRadius': 1.2*config['outer_radius']}
-    params_small = {'param1': 30, 'param2': 10, 'minRadius': 0.8*config['inner_radius'],
-                    'maxRadius': 1.2*config['inner_radius']}
+    params_big = {'param1': 10, 'param2': 10, 'minRadius': int(0.8*config['outer_radius']),
+                    'maxRadius': int(1.2*config['outer_radius'])}
+    params_small = {'param1': 30, 'param2': 10, 'minRadius': int(0.8*config['inner_radius']),
+                    'maxRadius': int(1.2*config['inner_radius'])}
     
     outercircle = np.empty(3,dtype=int)
     innercircle = np.empty(3,dtype=int)
