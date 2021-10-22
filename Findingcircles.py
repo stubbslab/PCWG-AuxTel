@@ -178,12 +178,19 @@ def FindCircle(exp, config, do_plot=0):
 
     return outercircle, innercircle
 
+def _getEfdData(client, dataSeries, startTime, endTime):
+    import asyncio
+    """A synchronous warpper for geting the data from the EFD.
+    This exists so that the top level functions don't all have to be async def.
+    """
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(client.select_time_series(dataSeries, ['*'], startTime, endTime)
+
 
 def getEFDinfo(dayObs, seqNum):
     """ Wrapper that grabs the EFD info for each sequence"""
     from astropy.time import Time, TimeDelta
     from lsst_efd_client import EfdClient
-    from lsst.rapid.analysis.mountTorques import _getEfdData
 
     client = EfdClient('summit_efd')
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
