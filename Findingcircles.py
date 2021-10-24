@@ -42,7 +42,7 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         the dispalcement along the y-axis for all exposures.
     """
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
-    EFDlist = []
+    #EFDlist = []
     dxArray = []
     dyArray = []
 
@@ -52,7 +52,7 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         config = config 
     else:
         config = {"Halfbox": 1200, "kernel": 61, "minclip": 0.1,
-                  "maxclip": 0.5, "outer_radius": 750, "inner_radius": 320}
+                  "maxclip": 0.5, "outer_radius": 750, "inner_radius": 300}
 
     for seq_Num in seq_List:
         outercircle = np.zeros(3, dtype=int)
@@ -61,13 +61,13 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         outercircle, innercircle = FindCircle(exp, config, do_plot)
         centrationoffset = outercircle - innercircle
         print(f"Seq_num: {seq_Num}, dx_offset={centrationoffset[0,0]}, dy_offset={centrationoffset[0,1]}")
-        expId, position = getEFDinfo(obs_Date, seq_Num)
+        #expId, position = getEFDinfo(obs_Date, seq_Num)
 
-        EFDlist.append([expId, position])
+        #EFDlist.append([expId, position])
         dxArray.append(centrationoffset[0, 0])
         dyArray.append(centrationoffset[0, 1])
 
-    return EFDlist, dxArray, dyArray
+    return dxArray, dyArray
 
 
 def FindCircle(exp, config, do_plot=0):
@@ -152,9 +152,9 @@ def FindCircle(exp, config, do_plot=0):
         circle = np.round(circle[0,:]).astype(int)
         return circle
 
-    params_big = {'param1': 10, 'param2': 10, 'minRadius': int(0.8*config['outer_radius']),
+    params_big = {'param1': 10, 'param2': 10, 'minRadius': int(config['outer_radius']),
                     'maxRadius': int(1.2*config['outer_radius'])}
-    params_small = {'param1': 30, 'param2': 10, 'minRadius': int(0.8*config['inner_radius']),
+    params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['inner_radius']),
                     'maxRadius': int(1.2*config['inner_radius'])}
     
     outercircle = np.empty(3,dtype=int)
@@ -175,7 +175,8 @@ def FindCircle(exp, config, do_plot=0):
             cv2.circle(intimage, (x, y), r, (128, 128, 128), 4)
             cv2.rectangle(intimage, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
         plt.imshow(intimage, origin='lower') 
-
+    #print("outer circle is", outercircle, "inner circle is", innercircle, flush=True)
+    #print(params_big, params_small, flush=True)
     return outercircle, innercircle
 
 def _getEfdData(client, dataSeries, startTime, endTime):
@@ -192,6 +193,7 @@ def getEFDinfo(dayObs, seqNum):
     """ Wrapper that grabs the EFD info for each sequence"""
     from astropy.time import Time, TimeDelta
     from lsst_efd_client import EfdClient
+    import pandas as pd
 
     client = EfdClient('summit_efd')
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
@@ -205,7 +207,10 @@ def getEFDinfo(dayObs, seqNum):
 
     # Get the reported position
     #hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],t_start, t_end)
-    hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus", t_start, t_end)
+    #hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus", t_start, t_end)
+    #Wild attempt from my side:
+    hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],t_start, t_end)
+    print(hex_position.head())
     # This dictionary gives the hexapod names and indices
     # units for x,y,z in mm and u,v,w in degrees, according to https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate. 
 
