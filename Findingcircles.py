@@ -5,7 +5,7 @@ import lsst.daf.persistence as dafPersist
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
-import copy
+# import copy
 from lsst.rapid.analysis.imageExaminer import ImageExaminer
 
 
@@ -42,7 +42,7 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         the dispalcement along the y-axis for all exposures.
     """
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
-    #EFDlist = []
+    # EFDlist = []
     dxArray = []
     dyArray = []
 
@@ -61,9 +61,9 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         outercircle, innercircle = FindCircle(exp, config, do_plot)
         centrationoffset = outercircle - innercircle
         print(f"Seq_num: {seq_Num}, dx_offset={centrationoffset[0,0]}, dy_offset={centrationoffset[0,1]}")
-        #expId, position = getEFDinfo(obs_Date, seq_Num)
+        # expId, position = getEFDinfo(obs_Date, seq_Num)
 
-        #EFDlist.append([expId, position])
+        # EFDlist.append([expId, position])
         dxArray.append(centrationoffset[0, 0])
         dyArray.append(centrationoffset[0, 1])
 
@@ -98,7 +98,7 @@ def FindCircle(exp, config, do_plot=0):
 
     cutout = cut_out(imexam)
 
-    print("We cut out the figure, next lets smooth it", flush= True)
+    print("We cut out the figure, next lets smooth it", flush=True)
     # We smooth the cutout
     cutoutSmoothed = cv2.GaussianBlur(cutout, (config["kernel"], config["kernel"]), 0)
 
@@ -108,10 +108,10 @@ def FindCircle(exp, config, do_plot=0):
         plt.show()
 
     # We normalize and remove background sky values:
-    normvalue=np.percentile(cutoutSmoothed, 85)
-    skyvalue=np.percentile(cutoutSmoothed, 10)
+    normvalue = np.percentile(cutoutSmoothed, 85)
+    skyvalue = np.percentile(cutoutSmoothed, 10)
 
-    normimage=(cutoutSmoothed-skyvalue)/normvalue
+    normimage = (cutoutSmoothed-skyvalue)/normvalue
 
     if do_plot == 1:
         plt.plot(normimage[1000, :])
@@ -127,38 +127,38 @@ def FindCircle(exp, config, do_plot=0):
     there is in particular the issue of what happens when he computes the intimage from the normimage,
     these two are close, but something seems to happen at the edges? I did check, the intimage I get
     with the code above is equal to the intimage that Chris method gets as well, via. a np.array_equal"""
-    #np.clip(normimage, configs["minclip"], configs["maxclip"] , out=normimage) # set regions above maxclip to maxclip and below minclip to minclip
-    #normimage[normimage<=configs["minclip"]]=0
-    #normimage[normimage>=configs["maxclip"]]=255
+    # np.clip(normimage, configs["minclip"], configs["maxclip"] , out=normimage)
+    # set regions above maxclip to maxclip and below minclip to minclip
+    # normimage[normimage<=configs["minclip"]]=0
+    # normimage[normimage>=configs["maxclip"]]=255
 
-    #intimage=np.uint8(normimage*255/(max(np.ndarray.flatten(normimage))))
+    # intimage=np.uint8(normimage*255/(max(np.ndarray.flatten(normimage))))
 
-    #copying it
-    origintimage=copy.deepcopy(intimage) # keep a pristine one for later
+    # copying it
+    # origintimage = copy.deepcopy(intimage)  # keep a pristine one for later
 
     if do_plot == 1:
         plt.imshow(intimage, extent=[0, 2*config["Halfbox"], 0, 2*config["Halfbox"]], origin='lower',
-           cmap= 'RdGy')
+                   cmap='RdGy')
         plt.colorbar()
         plt.show()
-        #plt.plot(intimage[1200,:])
-
+        # plt.plot(intimage[1200,:])
 
     # Now calling cv2 for things first the outer circle!
 
     def get_circle(intimage, mindist, params):
-        circle =cv2.HoughCircles(intimage, cv2.HOUGH_GRADIENT, 1,mindist, **params)
+        circle = cv2.HoughCircles(intimage, cv2.HOUGH_GRADIENT, 1, mindist, **params)
 
-        circle = np.round(circle[0,:]).astype(int)
+        circle = np.round(circle[0, :]).astype(int)
         return circle
 
     params_big = {'param1': 10, 'param2': 10, 'minRadius': int(config['outer_radius']),
-                    'maxRadius': int(1.2*config['outer_radius'])}
+                  'maxRadius': int(1.2*config['outer_radius'])}
     params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['inner_radius']),
                     'maxRadius': int(1.2*config['inner_radius'])}
 
-    outercircle = np.empty(3,dtype=int)
-    innercircle = np.empty(3,dtype=int)
+    outercircle = np.empty(3, dtype=int)
+    innercircle = np.empty(3, dtype=int)
     outercircle = get_circle(intimage, 200, params_big)
     innercircle = get_circle(intimage, 300, params_small)
 
@@ -175,9 +175,10 @@ def FindCircle(exp, config, do_plot=0):
             cv2.circle(intimage, (x, y), r, (128, 128, 128), 4)
             cv2.rectangle(intimage, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
         plt.imshow(intimage, origin='lower')
-    #print("outer circle is", outercircle, "inner circle is", innercircle, flush=True)
-    #print(params_big, params_small, flush=True)
+    # print("outer circle is", outercircle, "inner circle is", innercircle, flush=True)
+    # print(params_big, params_small, flush=True)
     return outercircle, innercircle
+
 
 def _getEfdData(client, dataSeries, startTime, endTime):
     import asyncio
@@ -194,7 +195,7 @@ def getEFDinfo(dayObs, seqNum):
     wrapper does not work, there seems to be an issue with asyncio."""
     from astropy.time import Time, TimeDelta
     from lsst_efd_client import EfdClient
-    import pandas as pd
+    # import pandas as pd
 
     client = EfdClient('summit_efd')
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
@@ -202,20 +203,21 @@ def getEFDinfo(dayObs, seqNum):
     dataId = {'dayObs': dayObs, 'seqNum': seqNum}
     expId = butler.queryMetadata('raw', 'expId', **dataId)[0]
 
-    tStart = butler.queryMetadata('raw', ['DATE'], detector=0, expId=expId)# Get the data
+    tStart = butler.queryMetadata('raw', ['DATE'], detector=0, expId=expId)  # Get the data
     t_start = Time(tStart, scale='tai')[0]
     t_end = t_start + TimeDelta(1, format='sec')
 
     # Get the reported position
-    #hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],t_start, t_end)
-    #hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus", t_start, t_end)
-    #Wild attempt from my side:
-    hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],t_start, t_end)
+    # hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],t_start, t_end)
+    # hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus", t_start, t_end)
+    # Wild attempt from my side:
+    hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'], t_start, t_end)
     print(hex_position.head())
     # This dictionary gives the hexapod names and indices
-    # units for x,y,z in mm and u,v,w in degrees, according to https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate.
+    # units for x,y,z in mm and u,v,w in degrees, according to
+    # https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate.
 
-    names = {'u': 3,'v': 4,'w': 5,'x': 0,'y': 1,'z': 2}
+    names = {'u': 3, 'v': 4, 'w': 5, 'x': 0, 'y': 1, 'z': 2}
     positions = {}
     for name in names.keys():
         key = 'reportedPosition%d'%names[name]
