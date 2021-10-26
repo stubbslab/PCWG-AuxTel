@@ -7,6 +7,7 @@ import numpy as np
 import numpy.ma as ma
 # import copy
 from lsst.rapid.analysis.imageExaminer import ImageExaminer
+import os
 
 
 def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
@@ -54,11 +55,17 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         config = {"Halfbox": 1200, "kernel": 61, "minclip": 0.1,
                   "maxclip": 0.5, "outer_radius": 750, "inner_radius": 300}
 
+    if do_plot:
+        if os.path.isdir('detail_plots'):
+            pass
+        else:
+            os.mkdir('detail_plots')
+
     for seq_Num in seq_List:
         outercircle = np.zeros(3, dtype=int)
         innercircle = np.zeros(3, dtype=int)
         exp = butler.get('quickLookExp', dayObs=obs_Date, seqNum=seq_Num)
-        outercircle, innercircle = FindCircle(exp, config, do_plot)
+        outercircle, innercircle = FindCircle(exp, config, seq_Num, do_plot)
         centrationoffset = outercircle - innercircle
         print(f"Seq_num: {seq_Num}, dx_offset={centrationoffset[0,0]}, dy_offset={centrationoffset[0,1]}")
         # expId, position = getEFDinfo(obs_Date, seq_Num)
@@ -70,24 +77,31 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
     return dxArray, dyArray
 
 
-def FindCircle(exp, config, do_plot=0):
+def FindCircle(exp, config, seqNum, do_plot=0):
     """ This function finds does all the tricks to find the circle, and returns
     the inner and outer circles
     """
+    if do_plot:
+        path = f'detail_plots/seq{seqNum}'
+        if os.path.isdir(path):
+            pass
+        else:
+            os.mkdir(path)
 
     def examine(exp):
         imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"])
         if do_plot == 1:
+            fig = plt.figure()
             imexam.plot()
-            plt.show()
+            fig.savefig(path+'/detail1.png')
         return imexam
 
     def cut_out(imexam):
         cutout = np.array(imexam.data)
         if do_plot == 1:
+            fig = plt.figure()
             plt.imshow(cutout, cmap='gray', origin='lower', vmin=10, vmax=500)
-            print(imexam.centroid)
-            plt.show()
+            fig.savefig(path+'/detail2.png')
         return cutout
 
     ''' Not sure how much we need to make individual functions, seeing as the
@@ -103,9 +117,9 @@ def FindCircle(exp, config, do_plot=0):
     cutoutSmoothed = cv2.GaussianBlur(cutout, (config["kernel"], config["kernel"]), 0)
 
     if do_plot == 1:
-        plt.imshow(cutoutSmoothed, origin='lower')
-        plt.plot(cutoutSmoothed[1000, :])
-        plt.show()
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+        ax1.imshow(cutoutSmoothed, origin='lower')
+        ax2.plot(cutoutSmoothed[1000, :])
 
     # We normalize and remove background sky values:
     normvalue = np.percentile(cutoutSmoothed, 85)
@@ -114,8 +128,8 @@ def FindCircle(exp, config, do_plot=0):
     normimage = (cutoutSmoothed-skyvalue)/normvalue
 
     if do_plot == 1:
-        plt.plot(normimage[1000, :])
-        plt.show()
+        ax3.plot(normimage[1000, :])
+        fig.savefig(path+'/detail3.png')
 
     # Now we have the normalized image, and we want to convert those to either being there or not
 
@@ -138,10 +152,11 @@ def FindCircle(exp, config, do_plot=0):
     # origintimage = copy.deepcopy(intimage)  # keep a pristine one for later
 
     if do_plot == 1:
+        fig = plt.figure()
         plt.imshow(intimage, extent=[0, 2*config["Halfbox"], 0, 2*config["Halfbox"]], origin='lower',
                    cmap='RdGy')
         plt.colorbar()
-        plt.show()
+        fig.savefig(path+'/detail4.png')
         # plt.plot(intimage[1200,:])
 
     # Now calling cv2 for things first the outer circle!
@@ -163,18 +178,20 @@ def FindCircle(exp, config, do_plot=0):
     innercircle = get_circle(intimage, 300, params_small)
 
     if do_plot == 1:
+        fig, (ax1, ax2) = plt.subplots(1, 2)
         for (x, y, r) in outercircle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
             cv2.circle(intimage, (x, y), r, (128, 128, 128), 4)
             cv2.rectangle(intimage, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 128), -1)
-        plt.imshow(intimage, origin='lower')
+        ax1.imshow(intimage, origin='lower')
         for (x, y, r) in innercircle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
             cv2.circle(intimage, (x, y), r, (128, 128, 128), 4)
             cv2.rectangle(intimage, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
-        plt.imshow(intimage, origin='lower')
+        ax2.imshow(intimage, origin='lower')
+        fig.savefig(path+'/detail5.png')
     # print("outer circle is", outercircle, "inner circle is", innercircle, flush=True)
     # print(params_big, params_small, flush=True)
     return outercircle, innercircle
