@@ -25,10 +25,10 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
     do_plot : `bool`
         Whether or not we should be attempt to plot all supporting figures
         along the way.
-    
+
     config : `dict`
         Optional configuration dictionary, if not provided we will use a
-        standard configuration defined below. 
+        standard configuration defined below.
 
     Returns
     -------
@@ -36,8 +36,8 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
         List of all relevant EFD data related to the exposures.
 
     dxArray : `list`
-        The displacement along the x-axis for all exposures. 
-    
+        The displacement along the x-axis for all exposures.
+
     dyArray : `list`
         the dispalcement along the y-axis for all exposures.
     """
@@ -49,7 +49,7 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
     ''' Here we look if a config dictionary is passed, if not then we will
     use the default values. '''
     if config != "None":
-        config = config 
+        config = config
     else:
         config = {"Halfbox": 1200, "kernel": 61, "minclip": 0.1,
                   "maxclip": 0.5, "outer_radius": 750, "inner_radius": 300}
@@ -93,15 +93,15 @@ def FindCircle(exp, config, do_plot=0):
     ''' Not sure how much we need to make individual functions, seeing as the
     work flow is the same for each image in the sequence.
     '''
-    
-    imexam = examine(exp) 
+
+    imexam = examine(exp)
 
     cutout = cut_out(imexam)
 
     print("We cut out the figure, next lets smooth it", flush= True)
     # We smooth the cutout
     cutoutSmoothed = cv2.GaussianBlur(cutout, (config["kernel"], config["kernel"]), 0)
-        
+
     if do_plot == 1:
         plt.imshow(cutoutSmoothed, origin='lower')
         plt.plot(cutoutSmoothed[1000, :])
@@ -116,7 +116,7 @@ def FindCircle(exp, config, do_plot=0):
     if do_plot == 1:
         plt.plot(normimage[1000, :])
         plt.show()
-        
+
     # Now we have the normalized image, and we want to convert those to either being there or not
 
     # Think this might be an easier way of getting the 0/1 data out.
@@ -124,7 +124,7 @@ def FindCircle(exp, config, do_plot=0):
     intimage = np.uint8(255*normmask)
 
     """ This is what Chris's code looked like for this part, I am a little confused about what he does,
-    there is in particular the issue of what happens when he computes the intimage from the normimage, 
+    there is in particular the issue of what happens when he computes the intimage from the normimage,
     these two are close, but something seems to happen at the edges? I did check, the intimage I get
     with the code above is equal to the intimage that Chris method gets as well, via. a np.array_equal"""
     #np.clip(normimage, configs["minclip"], configs["maxclip"] , out=normimage) # set regions above maxclip to maxclip and below minclip to minclip
@@ -132,10 +132,10 @@ def FindCircle(exp, config, do_plot=0):
     #normimage[normimage>=configs["maxclip"]]=255
 
     #intimage=np.uint8(normimage*255/(max(np.ndarray.flatten(normimage))))
-    
+
     #copying it
     origintimage=copy.deepcopy(intimage) # keep a pristine one for later
-        
+
     if do_plot == 1:
         plt.imshow(intimage, extent=[0, 2*config["Halfbox"], 0, 2*config["Halfbox"]], origin='lower',
            cmap= 'RdGy')
@@ -156,12 +156,12 @@ def FindCircle(exp, config, do_plot=0):
                     'maxRadius': int(1.2*config['outer_radius'])}
     params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['inner_radius']),
                     'maxRadius': int(1.2*config['inner_radius'])}
-    
+
     outercircle = np.empty(3,dtype=int)
     innercircle = np.empty(3,dtype=int)
     outercircle = get_circle(intimage, 200, params_big)
     innercircle = get_circle(intimage, 300, params_small)
-    
+
     if do_plot == 1:
         for (x, y, r) in outercircle:
             # draw the circle in the output image, then draw a rectangle
@@ -174,7 +174,7 @@ def FindCircle(exp, config, do_plot=0):
             # corresponding to the center of the circle
             cv2.circle(intimage, (x, y), r, (128, 128, 128), 4)
             cv2.rectangle(intimage, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
-        plt.imshow(intimage, origin='lower') 
+        plt.imshow(intimage, origin='lower')
     #print("outer circle is", outercircle, "inner circle is", innercircle, flush=True)
     #print(params_big, params_small, flush=True)
     return outercircle, innercircle
@@ -190,7 +190,8 @@ def _getEfdData(client, dataSeries, startTime, endTime):
 
 
 def getEFDinfo(dayObs, seqNum):
-    """ Wrapper that grabs the EFD info for each sequence"""
+    """ Wrapper that grabs the EFD info for each sequence, currently this
+    wrapper does not work, there seems to be an issue with asyncio."""
     from astropy.time import Time, TimeDelta
     from lsst_efd_client import EfdClient
     import pandas as pd
@@ -212,7 +213,7 @@ def getEFDinfo(dayObs, seqNum):
     hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],t_start, t_end)
     print(hex_position.head())
     # This dictionary gives the hexapod names and indices
-    # units for x,y,z in mm and u,v,w in degrees, according to https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate. 
+    # units for x,y,z in mm and u,v,w in degrees, according to https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate.
 
     names = {'u': 3,'v': 4,'w': 5,'x': 0,'y': 1,'z': 2}
     positions = {}
@@ -222,12 +223,3 @@ def getEFDinfo(dayObs, seqNum):
         positions[name] = position
 
     return expId, positions
-
-    
-     
-
-
-
-
-
-    
