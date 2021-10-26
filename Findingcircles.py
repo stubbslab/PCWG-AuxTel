@@ -89,11 +89,11 @@ def FindCircle(exp, config, seqNum, do_plot=0):
             os.mkdir(path)
 
     def examine(exp):
-        imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"])
-        if do_plot == 1:
-            fig = plt.figure()
+        if do_plot:
+            imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"], savePlots=path+'/detail1.png')
             imexam.plot()
-            fig.savefig(path+'/detail1.png')
+        else:
+            imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"])
         return imexam
 
     def cut_out(imexam):
