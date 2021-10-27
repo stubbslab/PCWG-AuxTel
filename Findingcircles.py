@@ -60,7 +60,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwarg
 
     if doPlot:
         try:
-            os.mkdir(path, exist_ok=True)
+            os.makedirs(path, exist_ok=True)
         except FileExistsError:
             print(f"Seems like a file exists at {path}, so we can't make a folder.")
         except PermissionError:
@@ -117,7 +117,7 @@ def findCircle(exp, config, seqNum, path, doPlot=False):
     path = os.path.join(path, f"seq{seqNum}")
     if doPlot:
         try:
-            os.mkdir(path, exist_ok=True)
+            os.makedirs(path, exist_ok=True)
         except FileExistsError:
             print(f"Seems like a file exists at {path}, so we can't make a folder.")
         except PermissionError:
