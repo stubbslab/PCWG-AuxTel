@@ -5,26 +5,25 @@ import lsst.daf.persistence as dafPersist
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
-# import copy
 from lsst.rapid.analysis.imageExaminer import ImageExaminer
 import os
 
 
-def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
+def findCircles(day_obs, seq_nums, doPlot=False, config=None, **kwargs):
     """Let's find all the circles! this function simply loops over a
     sequence list (seq_List) the function FindCircle, which does all
     the work for a single exposure.
 
     Parameters
     ----------
-    obs_Date : `string`
+    day_obs : `string`
         The observation date we are looking to find circles for.
 
-    seq_List : `list`
-        The list of sequences we are hoping to obtain exposures for.
+    seq_nums : `iterable`
+        The iterable of sequences we are hoping to obtain exposures for.
 
-    do_plot : `bool`
-        Whether or not we should be attempt to plot all supporting figures
+    doPlot : `bool`
+        Whether or not we should attempt to plot all supporting figures
         along the way.
 
     config : `dict`
@@ -33,168 +32,180 @@ def Findcircles(obs_Date, seq_List, do_plot=0, config="None"):
 
     Returns
     -------
-    EFDlist : `list`
+    efd_infos : `list of touples`
         List of all relevant EFD data related to the exposures.
 
-    dxArray : `list`
+    dxs : `list`
         The displacement along the x-axis for all exposures.
 
-    dyArray : `list`
-        the dispalcement along the y-axis for all exposures.
+    dys : `list`
+        The dispalcement along the y-axis for all exposures.
     """
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
-    # EFDlist = []
-    dxArray = []
-    dyArray = []
+    # efd_infos = []
+    dxs = []
+    dys = []
 
-    ''' Here we look if a config dictionary is passed, if not then we will
-    use the default values. '''
-    if config != "None":
-        config = config
-    else:
-        config = {"Halfbox": 1200, "kernel": 61, "minclip": 0.1,
-                  "maxclip": 0.5, "outer_radius": 750, "inner_radius": 300}
+    # Here we look if a config dictionary is passed, if not then we will
+    # use the default values.
+    if not config:
+        config = {"Halfbox": 1200, "kernel": 61, "minclip": 0.1, "maxclip": 0.5,
+                  "outer_radius": 750, "inner_radius": 300, "vmin": 10,
+                  "vmax": 500, "normPercent": 85, "skyPercent": 10,
+                  "min_dist_outer": 200, "min_dist_inner": 300
+                  }
 
-    if do_plot:
+    if doPlot:
         if os.path.isdir('detail_plots'):
             pass
         else:
             os.mkdir('detail_plots')
 
-    for seq_Num in seq_List:
-        outercircle = np.zeros(3, dtype=int)
-        innercircle = np.zeros(3, dtype=int)
-        exp = butler.get('quickLookExp', dayObs=obs_Date, seqNum=seq_Num)
-        outercircle, innercircle = FindCircle(exp, config, seq_Num, do_plot)
-        centrationoffset = outercircle - innercircle
-        print(f"Seq_num: {seq_Num}, dx_offset={centrationoffset[0,0]}, dy_offset={centrationoffset[0,1]}")
+    for seq_num in seq_nums:
+        outer_circle = np.zeros(3, dtype=int)
+        inner_circle = np.zeros(3, dtype=int)
+        exp = butler.get('quickLookExp', dayObs=day_obs, seqNum=seq_num)
+        outer_circle, inner_circle = findCircle(exp, config, seq_num, doPlot)
+        centration_offset = outer_circle - inner_circle
+        print(f"Seq_num: {seq_num}, dx_offset={centration_offset[0,0]}, dy_offset={centration_offset[0,1]}")
         # expId, position = getEFDinfo(obs_Date, seq_Num)
 
-        # EFDlist.append([expId, position])
-        dxArray.append(centrationoffset[0, 0])
-        dyArray.append(centrationoffset[0, 1])
+        # efd_infos.append([expId, position])
+        dxs.append(centration_offset[0, 0])
+        dys.append(centration_offset[0, 1])
 
-    return dxArray, dyArray
+    return dxs, dys
 
 
-def FindCircle(exp, config, seqNum, do_plot=0):
-    """ This function finds does all the tricks to find the circle, and returns
-    the inner and outer circles
+def findCircle(exp, config, seqNum, doPlot=False):
+    """This function finds does all the tricks to find the circle for a single exposure
+    and returns the inner and outer circles for it.
+
+    Parameters
+    ----------
+    exp :
+        The exposure we are attempting to find the circles for.
+
+    config : 'dict'
+        Dictionary of the configuration options needed throughout the code.
+
+    seqNum : 'integer'
+        The sequence number, this is purely needed for the plotting part, but will
+        be asked for everytime.
+
+    doPlot : 'bool'
+        Boolean, whether we should do all the extra plotting or not.
     """
-    if do_plot:
+    if doPlot:
         path = f'detail_plots/seq{seqNum}'
         if os.path.isdir(path):
             pass
         else:
             os.mkdir(path)
 
-    def examine(exp):
-        if do_plot:
-            imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"], savePlots=path+'/detail1.png')
-            imexam.plot()
-        else:
-            imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"])
-        return imexam
-
-    def cut_out(imexam):
-        cutout = np.array(imexam.data)
-        if do_plot == 1:
-            fig = plt.figure()
-            plt.imshow(cutout, cmap='gray', origin='lower', vmin=10, vmax=500)
-            fig.savefig(path+'/detail2.png')
-        return cutout
-
     ''' Not sure how much we need to make individual functions, seeing as the
     work flow is the same for each image in the sequence.
     '''
 
-    imexam = examine(exp)
+    imexam = _examine(exp, config, path, doPlot)
 
-    cutout = cut_out(imexam)
+    cutout = _cutOut(imexam, config, path, doPlot)
 
     print("We cut out the figure, next lets smooth it", flush=True)
-    # We smooth the cutout
-    cutoutSmoothed = cv2.GaussianBlur(cutout, (config["kernel"], config["kernel"]), 0)
 
-    if do_plot == 1:
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
-        ax1.imshow(cutoutSmoothed, origin='lower')
-        ax2.plot(cutoutSmoothed[1000, :])
-
-    # We normalize and remove background sky values:
-    normvalue = np.percentile(cutoutSmoothed, 85)
-    skyvalue = np.percentile(cutoutSmoothed, 10)
-
-    normimage = (cutoutSmoothed-skyvalue)/normvalue
-
-    if do_plot == 1:
-        ax3.plot(normimage[1000, :])
-        fig.savefig(path+'/detail3.png')
+    norm_image = _smoothNormalized(cutout, config, path, doPlot)
 
     # Now we have the normalized image, and we want to convert those to either being there or not
 
-    # Think this might be an easier way of getting the 0/1 data out.
-    normmask = ma.getmask(ma.masked_greater_equal(normimage, config["maxclip"]))
-    intimage = np.uint8(255*normmask)
+    int_image = _detectMask(norm_image, config, path, doPlot)
 
-    """ This is what Chris's code looked like for this part, I am a little confused about what he does,
-    there is in particular the issue of what happens when he computes the intimage from the normimage,
-    these two are close, but something seems to happen at the edges? I did check, the intimage I get
-    with the code above is equal to the intimage that Chris method gets as well, via. a np.array_equal"""
-    # np.clip(normimage, configs["minclip"], configs["maxclip"] , out=normimage)
-    # set regions above maxclip to maxclip and below minclip to minclip
-    # normimage[normimage<=configs["minclip"]]=0
-    # normimage[normimage>=configs["maxclip"]]=255
-
-    # intimage=np.uint8(normimage*255/(max(np.ndarray.flatten(normimage))))
-
-    # copying it
-    # origintimage = copy.deepcopy(intimage)  # keep a pristine one for later
-
-    if do_plot == 1:
-        fig = plt.figure()
-        plt.imshow(intimage, extent=[0, 2*config["Halfbox"], 0, 2*config["Halfbox"]], origin='lower',
-                   cmap='RdGy')
-        plt.colorbar()
-        fig.savefig(path+'/detail4.png')
-        # plt.plot(intimage[1200,:])
-
-    # Now calling cv2 for things first the outer circle!
-
-    def get_circle(intimage, mindist, params):
-        circle = cv2.HoughCircles(intimage, cv2.HOUGH_GRADIENT, 1, mindist, **params)
-
-        circle = np.round(circle[0, :]).astype(int)
-        return circle
+    # Now calling cv2 to find the actual circles using a HoughCircles.
 
     params_big = {'param1': 10, 'param2': 10, 'minRadius': int(config['outer_radius']),
                   'maxRadius': int(1.2*config['outer_radius'])}
     params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['inner_radius']),
                     'maxRadius': int(1.2*config['inner_radius'])}
 
-    outercircle = np.empty(3, dtype=int)
-    innercircle = np.empty(3, dtype=int)
-    outercircle = get_circle(intimage, 200, params_big)
-    innercircle = get_circle(intimage, 300, params_small)
+    outer_circle = np.empty(3, dtype=int)
+    inner_circle = np.empty(3, dtype=int)
+    outer_circle = _applyHoughTransform(int_image, config['min_dist_outer'], params_big)
+    inner_circle = _applyHoughTransform(int_image, config['min_dist_inner'], params_small)
 
-    if do_plot == 1:
+    if doPlot:
         fig, (ax1, ax2) = plt.subplots(1, 2)
-        for (x, y, r) in outercircle:
+        for (x, y, r) in outer_circle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            cv2.circle(intimage, (x, y), r, (128, 128, 128), 4)
-            cv2.rectangle(intimage, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 128), -1)
-        ax1.imshow(intimage, origin='lower')
-        for (x, y, r) in innercircle:
+            cv2.circle(int_image, (x, y), r, (128, 128, 128), 4)
+            cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 128), -1)
+        ax1.imshow(int_image, origin='lower')
+        for (x, y, r) in inner_circle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            cv2.circle(intimage, (x, y), r, (128, 128, 128), 4)
-            cv2.rectangle(intimage, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
-        ax2.imshow(intimage, origin='lower')
+            cv2.circle(int_image, (x, y), r, (128, 128, 128), 4)
+            cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
+        ax2.imshow(int_image, origin='lower')
         fig.savefig(path+'/detail5.png')
-    # print("outer circle is", outercircle, "inner circle is", innercircle, flush=True)
-    # print(params_big, params_small, flush=True)
-    return outercircle, innercircle
+
+    return outer_circle, inner_circle
+
+
+def _examine(exp, config, path, doPlot=False):
+    imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"], savePlots=path+'/detail1.png')
+    if doPlot:
+        imexam.plot()
+    return imexam
+
+
+def _cutOut(imexam, config, path, doPlot=False):
+    cutout = np.array(imexam.data)
+    if doPlot:
+        fig = plt.figure()
+        plt.imshow(cutout, cmap='gray', origin='lower', vmin=config['vmin'], vmax=config['vmax'])
+        fig.savefig(path+'/detail2.png')
+    return cutout
+
+
+def _smoothNormalized(cutout, config, path, doPlot=False):
+    # We smooth the cutout
+    cutoutSmoothed = cv2.GaussianBlur(cutout, (config["kernel"], config["kernel"]), 0)
+
+    if doPlot:
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+        ax1.imshow(cutoutSmoothed, origin='lower')
+        ax2.plot(cutoutSmoothed[config['Halfbox'], :])
+
+    # We normalize and remove background sky values:
+    normValue = np.percentile(cutoutSmoothed, config["normPercent"])
+    skyValue = np.percentile(cutoutSmoothed, config["skyPercent"])
+
+    normImage = (cutoutSmoothed-skyValue)/normValue
+
+    if doPlot == 1:
+        ax3.plot(normImage[config['Halfbox'], :])
+        fig.savefig(path+'/detail3.png')
+
+    return normImage
+
+
+def _detectMask(normImage, config, path, doPlot):
+    normMask = ma.getmask(ma.masked_greater_equal(normImage, config["maxclip"]))
+    intImage = np.uint8(255*normMask)
+
+    if doPlot:
+        fig = plt.figure()
+        plt.imshow(intImage, origin='lower', cmap='RdGy')
+        plt.colorbar()
+        fig.savefig(path+'/detail4.png')
+
+    return intImage
+
+
+def _applyHoughTransform(intImage, min_dist, params):
+    circle = cv2.HoughCircles(intImage, cv2.HOUGH_GRADIENT, 1, min_dist, **params)
+
+    circle = np.round(circle[0, :]).astype(int)
+    return circle
 
 
 def _getEfdData(client, dataSeries, startTime, endTime):
@@ -207,15 +218,13 @@ def _getEfdData(client, dataSeries, startTime, endTime):
     return loop.run_until_complete(client.select_time_series(dataSeries, ['*'], startTime, endTime))
 
 
-def getEFDinfo(dayObs, seqNum):
+def getEFDinfo(dayObs, seqNum, butler):
     """ Wrapper that grabs the EFD info for each sequence, currently this
     wrapper does not work, there seems to be an issue with asyncio."""
     from astropy.time import Time, TimeDelta
     from lsst_efd_client import EfdClient
-    # import pandas as pd
 
     client = EfdClient('summit_efd')
-    butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
 
     dataId = {'dayObs': dayObs, 'seqNum': seqNum}
     expId = butler.queryMetadata('raw', 'expId', **dataId)[0]
