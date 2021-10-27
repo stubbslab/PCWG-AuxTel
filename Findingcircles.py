@@ -9,7 +9,7 @@ from lsst.rapid.analysis.imageExaminer import ImageExaminer
 import os
 
 
-def findCircles(day_obs, seq_nums, doPlot=False, config=None, **kwargs):
+def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwargs):
     """Let's find all the circles! this function simply loops over a
     sequence list (seq_List) the function FindCircle, which does all
     the work for a single exposure.
@@ -56,10 +56,13 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, **kwargs):
                   }
 
     if doPlot:
-        if os.path.isdir('detail_plots'):
-            pass
-        else:
-            os.mkdir('detail_plots')
+        path = os.path.join(path, "detail_plots")
+        try:
+            os.mkdir(path, exist_ok=True)
+        except FileExistsError:
+            print(f"Seems like a file exists at {path}, so we can't make a folder.")
+        except PermissionError:
+            print(f"We cannot save the files to {path}, we lack permission.")
 
     for seq_num in seq_nums:
         outer_circle = np.zeros(3, dtype=int)
@@ -77,7 +80,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, **kwargs):
     return dxs, dys
 
 
-def findCircle(exp, config, seqNum, doPlot=False):
+def findCircle(exp, config, seqNum, path, doPlot=False):
     """This function finds does all the tricks to find the circle for a single exposure
     and returns the inner and outer circles for it.
 
@@ -93,19 +96,30 @@ def findCircle(exp, config, seqNum, doPlot=False):
         The sequence number, this is purely needed for the plotting part, but will
         be asked for everytime.
 
+    path : 'string'
+        string, showing path where the extra plots would be saved.
+
     doPlot : 'bool'
         Boolean, whether we should do all the extra plotting or not.
+
+    Returns
+    -------
+    outer_circle : 'list'
+        list consisting of the cetroid position (x,y) and the radius of the outer
+        circle of the donut.
+
+    inner_circle : 'list'
+        list consisting of the centroid position (x,y) and the radius of the inner
+        circle of the donut.
     """
     if doPlot:
-        path = f'detail_plots/seq{seqNum}'
-        if os.path.isdir(path):
-            pass
-        else:
-            os.mkdir(path)
-
-    ''' Not sure how much we need to make individual functions, seeing as the
-    work flow is the same for each image in the sequence.
-    '''
+        path = os.path.join(path, f"seq{seqNum}")
+        try:
+            os.mkdir(path, exist_ok=True)
+        except FileExistsError:
+            print(f"Seems like a file exists at {path}, so we can't make a folder.")
+        except PermissionError:
+            print(f"We cannot save the files to {path}, we lack permission.")
 
     imexam = _examine(exp, config, path, doPlot)
 
@@ -132,6 +146,7 @@ def findCircle(exp, config, seqNum, doPlot=False):
     inner_circle = _applyHoughTransform(int_image, config['min_dist_inner'], params_small)
 
     if doPlot:
+        path = os.path.join(path, "detail5.png")
         fig, (ax1, ax2) = plt.subplots(1, 2)
         for (x, y, r) in outer_circle:
             # draw the circle in the output image, then draw a rectangle
@@ -145,13 +160,14 @@ def findCircle(exp, config, seqNum, doPlot=False):
             cv2.circle(int_image, (x, y), r, (128, 128, 128), 4)
             cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
         ax2.imshow(int_image, origin='lower')
-        fig.savefig(path+'/detail5.png')
+        fig.savefig(path)
 
     return outer_circle, inner_circle
 
 
 def _examine(exp, config, path, doPlot=False):
-    imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"], savePlots=path+'/detail1.png')
+    path = os.path.join(path, "detail1.png")
+    imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"], savePlots=path)
     if doPlot:
         imexam.plot()
     return imexam
@@ -160,9 +176,10 @@ def _examine(exp, config, path, doPlot=False):
 def _cutOut(imexam, config, path, doPlot=False):
     cutout = np.array(imexam.data)
     if doPlot:
+        path = os.path.join(path, "detail2.png")
         fig = plt.figure()
         plt.imshow(cutout, cmap='gray', origin='lower', vmin=config['vmin'], vmax=config['vmax'])
-        fig.savefig(path+'/detail2.png')
+        fig.savefig(path)
     return cutout
 
 
@@ -181,9 +198,10 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
     normImage = (cutoutSmoothed-skyValue)/normValue
 
-    if doPlot == 1:
+    if doPlot:
+        path = os.path.join(path, "detail3.png")
         ax3.plot(normImage[config['Halfbox'], :])
-        fig.savefig(path+'/detail3.png')
+        fig.savefig(path)
 
     return normImage
 
@@ -193,10 +211,11 @@ def _detectMask(normImage, config, path, doPlot):
     intImage = np.uint8(255*normMask)
 
     if doPlot:
+        path = os.path.join(path, "detail4.png")
         fig = plt.figure()
         plt.imshow(intImage, origin='lower', cmap='RdGy')
         plt.colorbar()
-        fig.savefig(path+'/detail4.png')
+        fig.savefig(path)
 
     return intImage
 
