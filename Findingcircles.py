@@ -55,8 +55,10 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwarg
                   "min_dist_outer": 200, "min_dist_inner": 300
                   }
 
+    if not path:
+            path = os.path.join(os.getcwd(), "detail_plots")
+
     if doPlot:
-        path = os.path.join(path, "detail_plots")
         try:
             os.mkdir(path, exist_ok=True)
         except FileExistsError:
