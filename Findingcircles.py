@@ -112,8 +112,8 @@ def findCircle(exp, config, seqNum, path, doPlot=False):
         list consisting of the centroid position (x,y) and the radius of the inner
         circle of the donut.
     """
+    path = os.path.join(path, f"seq{seqNum}")
     if doPlot:
-        path = os.path.join(path, f"seq{seqNum}")
         try:
             os.mkdir(path, exist_ok=True)
         except FileExistsError:
