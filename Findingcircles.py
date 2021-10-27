@@ -68,7 +68,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, **kwargs):
         outer_circle, inner_circle = findCircle(exp, config, seq_num, doPlot)
         centration_offset = outer_circle - inner_circle
         print(f"Seq_num: {seq_num}, dx_offset={centration_offset[0,0]}, dy_offset={centration_offset[0,1]}")
-        # expId, position = getEFDinfo(obs_Date, seq_Num)
+        # expId, position = get_efd_info(obs_Date, seq_Num)
 
         # efd_infos.append([expId, position])
         dxs.append(centration_offset[0, 0])
@@ -218,7 +218,7 @@ def _getEfdData(client, dataSeries, startTime, endTime):
     return loop.run_until_complete(client.select_time_series(dataSeries, ['*'], startTime, endTime))
 
 
-def getEFDinfo(dayObs, seqNum, butler):
+def get_efd_info(dayObs, seqNum, butler):
     """ Wrapper that grabs the EFD info for each sequence, currently this
     wrapper does not work, there seems to be an issue with asyncio."""
     from astropy.time import Time, TimeDelta
