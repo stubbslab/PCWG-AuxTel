@@ -70,7 +70,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwarg
         outer_circle = np.zeros(3, dtype=int)
         inner_circle = np.zeros(3, dtype=int)
         exp = butler.get('quickLookExp', dayObs=day_obs, seqNum=seq_num)
-        outer_circle, inner_circle = findCircle(exp, config, seq_num, doPlot)
+        outer_circle, inner_circle = findCircle(exp, config, seq_num, path, doPlot)
         centration_offset = outer_circle - inner_circle
         print(f"Seq_num: {seq_num}, dx_offset={centration_offset[0,0]}, dy_offset={centration_offset[0,1]}")
         # expId, position = get_efd_info(obs_Date, seq_Num)
