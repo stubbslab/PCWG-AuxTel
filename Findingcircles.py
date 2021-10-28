@@ -39,7 +39,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwarg
         The displacement along the x-axis for all exposures.
 
     dys : `list`
-        The dispalcement along the y-axis for all exposures.
+        The displacement along the y-axis for all exposures.
     """
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
     # efd_infos = []
@@ -62,9 +62,13 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwarg
         try:
             os.makedirs(path, exist_ok=True)
         except FileExistsError:
+            doPlot = False
             print(f"Seems like a file exists at {path}, so we can't make a folder.")
+            print(" We have therefore turned of plotting.")
         except PermissionError:
+            doPlot = False
             print(f"We cannot save the files to {path}, we lack permission.")
+            print(" We have therefore turned of plotting.")
 
     for seq_num in seq_nums:
         outer_circle = np.zeros(3, dtype=int)
@@ -83,7 +87,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwarg
 
 
 def findCircle(exp, config, seqNum, path, doPlot=False):
-    """This function finds does all the tricks to find the circle for a single exposure
+    """This function does all the tricks to find the circle for a single exposure
     and returns the inner and outer circles for it.
 
     Parameters
@@ -114,7 +118,7 @@ def findCircle(exp, config, seqNum, path, doPlot=False):
         list consisting of the centroid position (x,y) and the radius of the inner
         circle of the donut.
     """
-    path = os.path.join(path, f"seq{seqNum}")
+    path = os.path.join(path, f"seq{seqNum:05}")
     if doPlot:
         try:
             os.makedirs(path, exist_ok=True)
