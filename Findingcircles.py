@@ -123,8 +123,10 @@ def findCircle(exp, config, seqNum, path, doPlot=False):
         try:
             os.makedirs(path, exist_ok=True)
         except FileExistsError:
+            doPlot = False
             print(f"Seems like a file exists at {path}, so we can't make a folder.")
         except PermissionError:
+            doPlot = False
             print(f"We cannot save the files to {path}, we lack permission.")
 
     imexam = _examine(exp, config, path, doPlot)
