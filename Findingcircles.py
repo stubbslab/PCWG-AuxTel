@@ -56,7 +56,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, config=None, path=None, **kwarg
                   }
 
     if not path:
-            path = os.path.join(os.getcwd(), "detail_plots")
+            path = os.path.join(os.getcwd(), f"detail_plots_{day_obs}")
 
     if doPlot:
         try:
