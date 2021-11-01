@@ -49,7 +49,7 @@ List of packages and their associated tickets:
 atmospec: master
 rapid_analysis: tickets/DM-31522
 Spectractor: master
-obs_lsst: tickets/DM-32141
+obs_lsst: tickets/DM-31997
 ```
 Currently recommended stack version: `w_2021_44`  
 Currently recommended rerun location for processed data: `/project/shared/auxTel/rerun/mfl/slurmRun/`
@@ -95,7 +95,7 @@ cd obs_lsst
 setup -j -r .
 scons opt=3 -j 4
 git fetch --all
-git reset --hard origin/tickets/DM-32141
+git reset --hard origin/tickets/DM-31997
 ```
 
 Footnotes
