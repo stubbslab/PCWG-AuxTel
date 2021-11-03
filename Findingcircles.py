@@ -149,13 +149,11 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
             doPlot = False
             print(f"We cannot save the files to {path}, we lack permission.")
 
-    imexam = _examine(exp, config, path, doPlot)
-
-    cutout = _cutOut(imexam, config, path, doPlot)
+    image = np.array(exp.image.array)
 
     print("We cut out the figure, next lets smooth it", flush=True)
 
-    norm_image, cutout_smoothed = _smoothNormalized(cutout, config, path, doPlot)
+    norm_image, cutout_smoothed = _smoothNormalized(image, config, path, doPlot)
 
     # Now we have the normalized image, and we want to convert those to either being there or not
 
@@ -200,6 +198,7 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
 
 
 def _examine(exp, config, path, doPlot=False):
+    '''This function has been deprecated and should be deleted.'''
     path = os.path.join(path, "detail1.png")
     imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"], savePlots=path)
     if doPlot:
@@ -208,6 +207,7 @@ def _examine(exp, config, path, doPlot=False):
 
 
 def _cutOut(imexam, config, path, doPlot=False):
+    '''This function has been deprecated and should be deleted.'''
     cutout = np.array(imexam.data)
     if doPlot:
         path = os.path.join(path, "detail2.png")
