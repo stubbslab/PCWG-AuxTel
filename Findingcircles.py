@@ -235,7 +235,7 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
     if doPlot:
         path = os.path.join(path, "detail3.png")
-        ax3.imshow(normImage, 'lower')
+        ax3.imshow(normImage, origin='lower')
         ax4.plot(normImage[halfbox, :])
         fig.savefig(path)
 
