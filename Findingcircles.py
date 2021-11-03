@@ -221,10 +221,11 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
     # We smooth the cutout
     cutoutSmoothed = cv2.GaussianBlur(cutout, (config["kernel"], config["kernel"]), 0)
 
+    halfbox = int(cutout.shape[0]/2)
     if doPlot:
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
         ax1.imshow(cutoutSmoothed, origin='lower')
-        ax2.plot(cutoutSmoothed[config['Halfbox'], :])
+        ax2.plot(cutoutSmoothed[halfbox, :])
 
     # We normalize and remove background sky values:
     normValue = np.percentile(cutoutSmoothed, config["normPercent"])
@@ -234,7 +235,8 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
     if doPlot:
         path = os.path.join(path, "detail3.png")
-        ax3.plot(normImage[config['Halfbox'], :])
+        ax3.imshow(normImage, 'lower')
+        ax4.plot(normImage[halfbox, :])
         fig.savefig(path)
 
     return normImage, cutoutSmoothed
