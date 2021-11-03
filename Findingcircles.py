@@ -221,7 +221,7 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
     halfbox = int(cutout.shape[0]/2)
     if doPlot:
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(2, 2)
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
         ax1.imshow(cutoutSmoothed, origin='lower')
         ax2.plot(cutoutSmoothed[halfbox, :])
 
