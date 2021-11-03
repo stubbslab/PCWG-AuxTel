@@ -173,18 +173,18 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
 
     if doPlot:
         path = os.path.join(path, "detail5.png")
-        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10,10))
         for (x, y, r) in outer_circle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            cv2.circle(int_image, (x, y), r, (128, 128, 128), 4)
-            cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 128), -1)
+            cv2.circle(int_image, (x, y), r, (128, 128, 128), 10)
+            cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 128), -10)
         ax1.imshow(int_image, origin='lower')
         for (x, y, r) in inner_circle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            cv2.circle(int_image, (x, y), r, (128, 128, 128), 4)
-            cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -1)
+            cv2.circle(int_image, (x, y), r, (128, 128, 128), 10)
+            cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -10)
         ax2.imshow(int_image, origin='lower')
         fig.savefig(path)
 
@@ -221,7 +221,7 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
     halfbox = int(cutout.shape[0]/2)
     if doPlot:
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize = (10,10))
         ax1.imshow(cutoutSmoothed, origin='lower')
         ax2.plot(cutoutSmoothed[halfbox, :])
 
