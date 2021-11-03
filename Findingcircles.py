@@ -151,8 +151,6 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
 
     image = np.array(exp.image.array)
 
-    print("We cut out the figure, next lets smooth it", flush=True)
-
     norm_image, cutout_smoothed = _smoothNormalized(image, config, path, doPlot)
 
     # Now we have the normalized image, and we want to convert those to either being there or not
@@ -223,7 +221,7 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
     halfbox = int(cutout.shape[0]/2)
     if doPlot:
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(2, 2)
         ax1.imshow(cutoutSmoothed, origin='lower')
         ax2.plot(cutoutSmoothed[halfbox, :])
 
@@ -243,7 +241,10 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
 
 def _detectMask(normImage, config, path, doPlot):
-    normMask = ma.getmask(ma.masked_greater_equal(normImage, config["maxclip"]))
+    max_img = np.max(normImage)
+    mean_img = np.mean(normImage)
+    clip = max_img/2 - mean_img
+    normMask = ma.getmask(ma.masked_greater_equal(normImage, clip))
     intImage = np.uint8(255*normMask)
 
     if doPlot:
