@@ -177,13 +177,13 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
         for (x, y, r) in outer_circle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            cv2.circle(int_image, (x, y), r, (128, 128, 128), 10)
+            cv2.circle(int_image, (x, y), r, (128, 128, 128), 20)
             cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 128), -10)
         ax1.imshow(int_image, origin='lower')
         for (x, y, r) in inner_circle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            cv2.circle(int_image, (x, y), r, (128, 128, 128), 10)
+            cv2.circle(int_image, (x, y), r, (128, 128, 128), 20)
             cv2.rectangle(int_image, (x - 5, y - 5), (x + 5, y + 5), (128, 128, 0), -10)
         ax2.imshow(int_image, origin='lower')
         fig.savefig(path)
