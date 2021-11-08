@@ -281,7 +281,13 @@ def _planeskew(smoothedImage, normImage, config, path, doPlot):
     This implementation is heavily inspired by the example given in 
     https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
     """
-    nmi = ma.masked_less_equal(normImage, config["maxclip"])
+    if "maxclip" in config.keys():
+        clip = config["maxclip"]
+    else:
+        max_img = np.max(normImage)
+        mean_img = np.mean(normImage)
+        clip = max_img/2 - mean_img
+    nmi = ma.masked_less_equal(normImage, clip)
 
     if doPlot:
         path = os.path.join(path, "cutout.png")
