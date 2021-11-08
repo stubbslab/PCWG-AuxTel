@@ -7,7 +7,7 @@ import numpy as np
 import numpy.ma as ma
 from lsst.rapid.analysis.imageExaminer import ImageExaminer
 import os
-
+import logging 
 
 def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, path=None, **kwargs):
     """Let's find all the circles! this function simply loops over a
@@ -241,9 +241,14 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
 
 def _detectMask(normImage, config, path, doPlot):
-    max_img = np.max(normImage)
-    mean_img = np.mean(normImage)
-    clip = max_img/2 - mean_img
+    # Adding the option that we can either use a predefined value,
+    # or we can use an automatically calculated clip.
+    if "maxclip" in config.keys():
+        clip = config["maxclip"]
+    else:
+        max_img = np.max(normImage)
+        mean_img = np.mean(normImage)
+        clip = max_img/2 - mean_img
     normMask = ma.getmask(ma.masked_greater_equal(normImage, clip))
     intImage = np.uint8(255*normMask)
 
