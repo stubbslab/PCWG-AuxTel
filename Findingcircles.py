@@ -100,7 +100,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
         return dxs, dys
 
 
-def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
+def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCutout=False):
     """This function does all the tricks to find the circle for a single exposure
     and returns the inner and outer circles for it.
 
@@ -124,6 +124,9 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
 
     planeSkew : 'bool'
         Boolean, wheter or not we should attempt to fit the flux to a plane.
+    
+    useCutout ; 'bool'
+        Boolean, wheter to try and use the cutout feature to reduce image size.
 
     Returns
     -------
@@ -149,7 +152,11 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
             doPlot = False
             print(f"We cannot save the files to {path}, we lack permission.")
 
-    image = np.array(exp.image.array)
+    if useCutout:
+        imexam = _examine(exp, config, path, doPlot)
+        image = _cutOut(imexam, config, path, doPlot)
+    else:
+        image = np.array(exp.image.array)
 
     norm_image, cutout_smoothed = _smoothNormalized(image, config, path, doPlot)
 
