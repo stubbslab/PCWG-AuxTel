@@ -166,8 +166,8 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False):
     params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['inner_radius']),
                     'maxRadius': int(1.2*config['inner_radius'])}
 
-    outer_circle = np.empty(3, dtype=int)
-    inner_circle = np.empty(3, dtype=int)
+    outer_circle = np.empty(3)
+    inner_circle = np.empty(3)
     outer_circle = _applyHoughTransform(int_image, config['min_dist_outer'], params_big)
     inner_circle = _applyHoughTransform(int_image, config['min_dist_inner'], params_small)
 
