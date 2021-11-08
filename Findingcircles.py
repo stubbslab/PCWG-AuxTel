@@ -177,7 +177,7 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
     inner_circle = np.empty(3)
     outer_circle = _applyHoughTransform(int_image, config['min_dist_outer'], params_big)
     inner_circle = _applyHoughTransform(int_image, config['min_dist_inner'], params_small)
-
+    path2 = path
     if doPlot:
         path = os.path.join(path, "detail5.png")
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10,10))
@@ -196,7 +196,7 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
         fig.savefig(path)
 
     if planeSkew:
-        plane_coefficient = _planeskew(cutout_smoothed, norm_image, config, path, doPlot)
+        plane_coefficient = _planeskew(cutout_smoothed, norm_image, config, path2, doPlot)
         return outer_circle, inner_circle, plane_coefficient
     else:
         return outer_circle, inner_circle
