@@ -327,7 +327,7 @@ def get_efd_info(dayObs, seqNum, butler):
 
     client = EfdClient('summit_efd')
 
-    dataId = {'dayObs': dayObs, 'seqNum': seqNum}
+    dataId = {'day_obs': dayObs, 'seq_num': seqNum}
     expId = getExpIdFromDayObsSeqNum(butler, dataId)
     where = "exposure.day_obs=day_obs AND exposure.seq_num=seq_num"
     expRecords = butler.registry.queryDimensionRecords("exposure", where=where,
