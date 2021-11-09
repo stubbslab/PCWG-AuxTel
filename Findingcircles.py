@@ -323,6 +323,7 @@ def get_efd_info(dayObs, seqNum, butler):
     wrapper does not work, there seems to be an issue with asyncio."""
     from astropy.time import Time, TimeDelta
     from lsst_efd_client import EfdClient
+    from lsst.rapid.analysis.butlerUtils import getExpIdFromDayObsSeqNum
 
     client = EfdClient('summit_efd')
 
