@@ -327,18 +327,19 @@ def get_efd_info(dayObs, seqNum, butler):
     client = EfdClient('summit_efd')
 
     dataId = {'dayObs': dayObs, 'seqNum': seqNum}
-    expId = butler.queryMetadata('raw', 'expId', **dataId)[0]
-
-    tStart = butler.queryMetadata('raw', ['DATE'], detector=0, expId=expId)  # Get the data
-    t_start = Time(tStart, scale='tai')[0]
-    t_end = t_start + TimeDelta(1, format='sec')
-
-    # Get the reported position
-    # hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],t_start, t_end)
-    # hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus", t_start, t_end)
-    # Wild attempt from my side:
-    hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'], t_start, t_end)
-    print(hex_position.head())
+    expId = getExpIdFromDayObsSeqNum(butler, dataId)
+    where = "exposure.day_obs=day_obs AND exposure.seq_num=seq_num"
+    expRecords = butler.registry.queryDimensionRecords("exposure", where=where,
+                                                   bind={'day_obs': dataId['day_obs'],
+                                                         'seq_num': dataId['seq_num']})
+    expRecords = list(expRecords)
+    assert len(expRecords) == 1, f'Found more than one exposure record for {dataId}'
+    record = expRecords[0]
+    t_start = record.timespan.begin
+    t_end = record.timespan.end
+    
+    #hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'], t_start, t_end)
+    hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus",t_start, t_end)
     # This dictionary gives the hexapod names and indices
     # units for x,y,z in mm and u,v,w in degrees, according to
     # https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate.
