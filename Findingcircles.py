@@ -48,7 +48,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
         Optional list of coefficients for flux skew. 
     """
     butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
-    # efd_infos = []
+    efd_infos = []
     dxs = []
     dys = []
     if planeSkew:
@@ -89,15 +89,15 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
             outer_circle, inner_circle = findCircle(exp, config, seq_num, path, doPlot)
         centration_offset = outer_circle - inner_circle
         print(f"Seq_num: {seq_num}, dx_offset={centration_offset[0,0]}, dy_offset={centration_offset[0,1]}")
-        # expId, position = get_efd_info(obs_Date, seq_Num)
+        expId, position = get_efd_info(obs_Date, seq_Num)
 
-        # efd_infos.append([expId, position])
+        efd_infos.append([expId, position])
         dxs.append(centration_offset[0, 0])
         dys.append(centration_offset[0, 1])
     if planeSkew:
-        return dxs, dys, coef 
+        return dxs, dys, coef, efd_infos 
     else:
-        return dxs, dys
+        return dxs, dys, efd_infos
 
 
 def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCutout=False):
