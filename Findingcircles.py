@@ -316,7 +316,7 @@ def _getEfdData(client, dataSeries, startTime, endTime):
     """
     loop = asyncio.get_event_loop()
     future = asyncio.run_coroutine_threadsafe(client.select_time_series(dataSeries, ['*'], startTime, endTime), loop)
-    return future.result()
+    return future.result(timeout=10)
 
 
 def get_efd_info(dayObs, seqNum, butler):
