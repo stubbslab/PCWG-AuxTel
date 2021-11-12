@@ -315,7 +315,8 @@ def _getEfdData(client, dataSeries, startTime, endTime):
     curtesy of Merlin Levine-Fisher.
     """
     loop = asyncio.get_event_loop()
-    return asyncio.run_coroutine_threadsafe(client.select_time_series(dataSeries, ['*'], startTime, endTime), loop)
+    future = asyncio.run_coroutine_threadsafe(client.select_time_series(dataSeries, ['*'], startTime, endTime), loop)
+    return future.result()
 
 
 def get_efd_info(dayObs, seqNum, butler):
