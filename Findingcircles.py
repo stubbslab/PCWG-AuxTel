@@ -309,12 +309,13 @@ def _planeskew(smoothedImage, normImage, config, path, doPlot):
 
 
 def _getEfdData(client, dataSeries, startTime, endTime):
-    from asyncio import gather
-    """A synchronous warpper for geting the data from the EFD.
+    import asyncio
+    """A synchronous wrapper for geting the data from the EFD.
     This exists so that the top level functions don't all have to be async def.
     curtesy of Merlin Levine-Fisher.
     """
-    return gather(client.select_time_series(dataSeries, ['*'], startTime, endTime))
+    loop = asyncio.get_event_loop()
+    return asyncio.run_coroutine_threadsafe(client.select_time_series(dataSeries, ['*'], startTime, endTime), loop)
 
 
 def get_efd_info(dayObs, seqNum, butler):
