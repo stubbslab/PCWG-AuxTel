@@ -300,7 +300,7 @@ def _planeskew(smoothedImage, normImage, config, path, doPlot):
     mask = ma.getmask(nmi)
     y = ma.array(grid[0], mask = mask)
     x = ma.array(grid[1], mask = mask)
-    z = ma.array(smoothedImage, mask = mask)
+    z = ma.array(normImage, mask = mask)
     data = np.c_[x.compressed(),y.compressed(),z.compressed()]
     A = np.c_[data[:,0],data[:,1],np.ones(data.shape[0])]
     import scipy.linalg as linalg
