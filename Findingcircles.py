@@ -347,7 +347,7 @@ def get_efd_info(dayObs, seqNum, butler):
     t_end = record.timespan.end
     
     #hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'], t_start, t_end)
-    hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus",t_start, t_end)
+    hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus",t_start.utc, t_end.utc)
     # This dictionary gives the hexapod names and indices
     # units for x,y,z in mm and u,v,w in degrees, according to
     # https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate.
