@@ -1,7 +1,7 @@
 # This file forms the backbone for the alternative analysis of "donuts"
 # from AuxTel. It is based on work initially done by Chris Stubbs.
 import cv2
-import lsst.daf.persistence as dafPersist
+import lsst.rapid.analysis.butlerUtils as butlerUtils
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
@@ -9,7 +9,7 @@ from lsst.rapid.analysis.imageExaminer import ImageExaminer
 import os
 import logging 
 
-def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, path=None, **kwargs):
+def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, path=None, butler_type = 'NCSA', **kwargs):
     """Let's find all the circles! this function simply loops over a
     sequence list (seq_List) the function FindCircle, which does all
     the work for a single exposure.
@@ -33,6 +33,9 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
     path : `string`
         Optional path where detail plots should be saved. 
 
+    butler_type : `string`
+        Optional input, to change default butler type
+
     Returns
     -------
     efd_infos : `list of touples`
@@ -47,7 +50,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
     coefficients : `list`
         Optional list of coefficients for flux skew. 
     """
-    butler = dafPersist.Butler('/project/shared/auxTel/rerun/quickLook')
+    butler = butlerUtils.makeDefaultLatissButler(butler_type)
     efd_infos = []
     dxs = []
     dys = []
