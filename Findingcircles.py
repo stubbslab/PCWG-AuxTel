@@ -81,7 +81,8 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
     for seq_num in seq_nums:
         outer_circle = np.zeros(3, dtype=int)
         inner_circle = np.zeros(3, dtype=int)
-        exp = butler.get('quickLookExp', day_obs=day_obs, seq_num=seq_num, detector = 0)
+        dataId = {'day_obs': day_obs, 'seq_num': seq_num, 'detector':0 }
+        exp = butler.get('quickLookExp', dataId)
         if planeSkew:
             outer_circle, inner_circle, coefficients = findCircle(exp, config, seq_num, path, doPlot, planeSkew)
             coef.append(coefficients)
