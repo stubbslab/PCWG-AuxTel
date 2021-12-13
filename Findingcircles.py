@@ -7,9 +7,10 @@ import numpy as np
 import numpy.ma as ma
 from lsst.rapid.analysis.imageExaminer import ImageExaminer
 import os
-import logging 
 
-def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, path=None, butler_type = 'NCSA', **kwargs):
+
+def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, path=None,
+                butler_type='NCSA', **kwargs):
     """Let's find all the circles! this function simply loops over a
     sequence list (seq_List) the function FindCircle, which does all
     the work for a single exposure.
@@ -31,7 +32,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
         standard configuration defined below.
 
     path : `string`
-        Optional path where detail plots should be saved. 
+        Optional path where detail plots should be saved.
 
     butler_type : `string`
         Optional input, to change default butler type
@@ -46,9 +47,9 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
 
     dys : `list`
         The displacement along the y-axis for all exposures.
-    
+
     coefficients : `list`
-        Optional list of coefficients for flux skew. 
+        Optional list of coefficients for flux skew.
     """
     butler = butlerUtils.makeDefaultLatissButler(butler_type)
     efd_infos = []
@@ -67,7 +68,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
                   }
 
     if not path:
-            path = os.path.join(os.getcwd(), f"detail_plots_{day_obs}")
+        path = os.path.join(os.getcwd(), f"detail_plots_{day_obs}")
 
     if doPlot:
         try:
@@ -84,12 +85,13 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
     for seq_num in seq_nums:
         outer_circle = np.zeros(3, dtype=int)
         inner_circle = np.zeros(3, dtype=int)
-        dataId = {'day_obs': day_obs, 'seq_num': seq_num, 'detector':0 }
+        dataId = {'day_obs': day_obs, 'seq_num': seq_num, 'detector': 0}
         exp = butler.get('quickLookExp', dataId)
         if planeSkew:
-            outer_circle, inner_circle, coefficients = findCircle(exp, config, seq_num, path, doPlot, planeSkew)
+            outer_circle, inner_circle, coefficients = findCircle(exp, config, seq_num, path, doPlot,
+                                                                  planeSkew)
             coef.append(coefficients)
-        else:    
+        else:
             outer_circle, inner_circle = findCircle(exp, config, seq_num, path, doPlot)
         centration_offset = outer_circle - inner_circle
         print(f"Seq_num: {seq_num}, dx_offset={centration_offset[0,0]}, dy_offset={centration_offset[0,1]}")
@@ -99,14 +101,14 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
         dxs.append(centration_offset[0, 0])
         dys.append(centration_offset[0, 1])
     if planeSkew:
-        return dxs, dys, coef, efd_infos 
+        return dxs, dys, coef, efd_infos
     else:
         return dxs, dys, efd_infos
 
 
 def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCutout=False):
-    """This function does all the tricks to find the circle for a single exposure
-    and returns the inner and outer circles for it.
+    """This function does all the tricks to find the circle for a single
+    exposure and returns the inner and outer circles for it.
 
     Parameters
     ----------
@@ -117,8 +119,8 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
         Dictionary of the configuration options needed throughout the code.
 
     seqNum : 'integer'
-        The sequence number, this is purely needed for the plotting part, but will
-        be asked for everytime.
+        The sequence number, this is purely needed for the plotting part, but
+        will be asked for everytime.
 
     path : 'string'
         string, showing path where the extra plots would be saved.
@@ -128,22 +130,23 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
 
     planeSkew : 'bool'
         Boolean, wheter or not we should attempt to fit the flux to a plane.
-    
+
     useCutout ; 'bool'
         Boolean, wheter to try and use the cutout feature to reduce image size.
 
     Returns
     -------
     outer_circle : 'list'
-        list consisting of the cetroid position (x,y) and the radius of the outer
-        circle of the donut.
+        list consisting of the cetroid position (x,y) and the radius of the
+        outer circle of the donut.
 
     inner_circle : 'list'
-        list consisting of the centroid position (x,y) and the radius of the inner
-        circle of the donut.
+        list consisting of the centroid position (x,y) and the radius of the
+        inner circle of the donut.
 
     (Optional) plane_coefficient : 'list'
-        list of the coefficients (C) needed to plot a plane z = C[0]*x = C[1]*y + C[2]
+        list of the coefficients (C) needed to plot a plane
+        z = C[0]*x = C[1]*y + C[2]
     """
     path = os.path.join(path, f"seq{seqNum:05}")
     if doPlot:
@@ -164,14 +167,17 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
 
     norm_image, cutout_smoothed = _smoothNormalized(image, config, path, doPlot)
 
-    # Now we have the normalized image, and we want to convert those to either being there or not
+    # Now we have the normalized image, and we want to convert those to either
+    # being there or not
 
     int_image = _detectMask(norm_image, config, path, doPlot)
 
-    # Now calling cv2 to find the actual circles using a HoughCircles transform.
+    # Now calling cv2 to find the actual circles using a HoughCircles
+    # transform.
 
-    # Here, param1 and param2 are related to to how the cv2 method finds the edges of the circle, 
-    # and the center respectively. 
+    # Here, param1 and param2 are related to to how the cv2 method finds the
+    # edges of the circle,
+    # and the center respectively.
     params_big = {'param1': 10, 'param2': 10, 'minRadius': int(config['outer_radius']),
                   'maxRadius': int(1.2*config['outer_radius'])}
     params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['inner_radius']),
@@ -184,7 +190,7 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
     path2 = path
     if doPlot:
         path = os.path.join(path, "detail5.png")
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10,10))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 10))
         for (x, y, r) in outer_circle:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
@@ -232,7 +238,7 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
 
     halfbox = int(cutout.shape[0]/2)
     if doPlot:
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize = (10,10))
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(10, 10))
         ax1.imshow(cutoutSmoothed, origin='lower')
         ax2.plot(cutoutSmoothed[halfbox, :])
 
@@ -272,17 +278,20 @@ def _detectMask(normImage, config, path, doPlot):
 
     return intImage
 
+
 def _applyHoughTransform(intImage, min_dist, params):
     circle = cv2.HoughCircles(intImage, cv2.HOUGH_GRADIENT, 1, min_dist, **params)
 
     circle = np.round(circle[0, :]).astype(int)
     return circle
 
+
 def _planeskew(smoothedImage, normImage, config, path, doPlot):
-    """ What if we wanted to also find the skew, of the flux plane? Here we attempt to fit
-    a plane to the normalized fluxes, so in case we do see that the flux is uneven accross
-    the image, we have the coefficients for a z = a*x + b*y + c plane. with z being the flux.
-    This implementation is heavily inspired by the example given in 
+    """ What if we wanted to also find the skew, of the flux plane? Here we
+    attempt to fit a plane to the normalized fluxes, so in case we do see that
+    the flux is uneven across the image, we have the coefficients for a
+    z = a*x + b*y + c plane. with z being the flux.
+    This implementation is heavily inspired by the example given in
     https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
     """
     if "maxclip" in config.keys():
@@ -296,20 +305,20 @@ def _planeskew(smoothedImage, normImage, config, path, doPlot):
     if doPlot:
         path = os.path.join(path, "cutout.png")
         fig = plt.figure()
-        plt.imshow(nmi, origin = 'lower')
+        plt.imshow(nmi, origin='lower')
         plt.colorbar()
         fig.savefig(path)
 
     grid = np.indices(nmi.shape)
     mask = ma.getmask(nmi)
-    y = ma.array(grid[0], mask = mask)
-    x = ma.array(grid[1], mask = mask)
-    z = ma.array(normImage, mask = mask)
-    data = np.c_[x.compressed(),y.compressed(),z.compressed()]
-    A = np.c_[data[:,0],data[:,1],np.ones(data.shape[0])]
+    y = ma.array(grid[0], mask=mask)
+    x = ma.array(grid[1], mask=mask)
+    z = ma.array(normImage, mask=mask)
+    data = np.c_[x.compressed(), y.compressed(), z.compressed()]
+    a = np.c_[data[:, 0], data[:, 1], np.ones(data.shape[0])]
     import scipy.linalg as linalg
-    C,_,_,_ = linalg.lstsq(A,data[:,2])
-    return C
+    c, _, _, _ = linalg.lstsq(a, data[:, 2])
+    return c
 
 
 def _getEfdData(client, dataSeries, startTime, endTime):
@@ -324,11 +333,9 @@ def _getEfdData(client, dataSeries, startTime, endTime):
     return loop.run_until_complete(client.select_time_series(dataSeries, ['*'], startTime, endTime))
 
 
-
 def get_efd_info(dayObs, seqNum, butler):
     """ Wrapper that grabs the EFD info for each sequence, currently this
     wrapper does not work, there seems to be an issue with asyncio."""
-    from astropy.time import Time, TimeDelta
     from lsst_efd_client import EfdClient
     from lsst.rapid.analysis.butlerUtils import getExpIdFromDayObsSeqNum
 
@@ -338,16 +345,18 @@ def get_efd_info(dayObs, seqNum, butler):
     expId = getExpIdFromDayObsSeqNum(butler, dataId)
     where = "exposure.day_obs=day_obs AND exposure.seq_num=seq_num"
     expRecords = butler.registry.queryDimensionRecords("exposure", where=where,
-                                                   bind={'day_obs': dataId['day_obs'],
-                                                         'seq_num': dataId['seq_num']})
+                                                       bind={'day_obs': dataId['day_obs'],
+                                                             'seq_num': dataId['seq_num']})
     expRecords = list(expRecords)
     assert len(expRecords) == 1, f'Found more than one exposure record for {dataId}'
     record = expRecords[0]
     t_start = record.timespan.begin
     t_end = record.timespan.end
-    
-    #hex_position = client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'], t_start, t_end)
-    hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus",t_start.utc, t_end.utc)
+
+    # hex_position =
+    # client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],
+    # t_start, t_end)
+    hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus", t_start.utc, t_end.utc)
     # This dictionary gives the hexapod names and indices
     # units for x,y,z in mm and u,v,w in degrees, according to
     # https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate.
