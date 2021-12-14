@@ -10,9 +10,9 @@ import os
 
 
 def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, path=None,
-                butler_type='NCSA', **kwargs):
-    """Let's find all the circles! this function simply loops over a
-    sequence list (seq_List) the function FindCircle, which does all
+                butler_location='NCSA', **kwargs):
+    """This finds all the circles! this function simply loops over a
+    sequence list (seq_nums) the function FindCircle, which does all
     the work for a single exposure.
 
     Parameters
@@ -34,65 +34,53 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
     path : `string`
         Optional path where detail plots should be saved.
 
-    butler_type : `string`
+    butler_location : `string`
         Optional input, to change default butler type
 
     Returns
     -------
-    efd_infos : `list of touples`
-        List of all relevant EFD data related to the exposures.
+    efd_infos : `list of tuple`
+        List of tuple of all relevant EFD data related to the exposures.
 
     dxs : `list`
-        The displacement along the x-axis for all exposures.
+        The displacements along the x-axis for all exposures.
 
     dys : `list`
-        The displacement along the y-axis for all exposures.
+        The displacements along the y-axis for all exposures.
 
     coefficients : `list`
-        Optional list of coefficients for flux skew.
+        Optional list of plane coefficients for flux skew.
     """
-    butler = butlerUtils.makeDefaultLatissButler(butler_type)
+    butler = butlerUtils.makeDefaultLatissButler(butler_location)
     efd_infos = []
     dxs = []
     dys = []
-    if planeSkew:
-        coef = []
+    coefficients = []
 
     # Here we look if a config dictionary is passed, if not then we will
     # use the default values.
     if not config:
-        config = {"Halfbox": 1200, "kernel": 61, "minclip": 0.1, "maxclip": 0.5,
-                  "outer_radius": 750, "inner_radius": 300, "vmin": 10,
+        config = {"halfbox": 1200, "kernel": 61, "minclip": 0.1, "maxclip": 0.5,
+                  "outerRadius": 750, "innerRadius": 300, "vmin": 10,
                   "vmax": 500, "normPercent": 85, "skyPercent": 10,
-                  "min_dist_outer": 200, "min_dist_inner": 300
+                  "minDistOuter": 200, "minDistInner": 300
                   }
 
     if not path:
-        path = os.path.join(os.getcwd(), f"detail_plots_{day_obs}")
+        path = os.path.join(os.path.expanduser('~'), f"detail_plots_{day_obs}")
 
     if doPlot:
-        try:
-            os.makedirs(path, exist_ok=True)
-        except FileExistsError:
-            doPlot = False
-            print(f"Seems like a file exists at {path}, so we can't make a folder.")
-            print(" We have therefore turned of plotting.")
-        except PermissionError:
-            doPlot = False
-            print(f"We cannot save the files to {path}, we lack permission.")
-            print(" We have therefore turned of plotting.")
+        doPlot = _pathcheck(path)
 
     for seq_num in seq_nums:
         outer_circle = np.zeros(3, dtype=int)
         inner_circle = np.zeros(3, dtype=int)
         dataId = {'day_obs': day_obs, 'seq_num': seq_num, 'detector': 0}
         exp = butler.get('quickLookExp', dataId)
+        outer_circle, inner_circle, coef = findCircle(exp, config, seq_num, path, doPlot, planeSkew)
         if planeSkew:
-            outer_circle, inner_circle, coefficients = findCircle(exp, config, seq_num, path, doPlot,
-                                                                  planeSkew)
-            coef.append(coefficients)
-        else:
-            outer_circle, inner_circle = findCircle(exp, config, seq_num, path, doPlot)
+            coefficients.append(coef)
+
         centration_offset = outer_circle - inner_circle
         print(f"Seq_num: {seq_num}, dx_offset={centration_offset[0,0]}, dy_offset={centration_offset[0,1]}")
         expId, position = get_efd_info(day_obs, seq_num, butler)
@@ -100,64 +88,56 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
         efd_infos.append([expId, position])
         dxs.append(centration_offset[0, 0])
         dys.append(centration_offset[0, 1])
-    if planeSkew:
-        return dxs, dys, coef, efd_infos
-    else:
-        return dxs, dys, efd_infos
+
+    return efd_infos, dxs, dys, coefficients
 
 
-def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCutout=False):
+def findCircle(exp, config, seqNum, path, doPlot=False, doPlaneSkew=False, useCutout=False):
     """This function does all the tricks to find the circle for a single
     exposure and returns the inner and outer circles for it.
 
     Parameters
     ----------
-    exp :
+    exp : `lsst.afw.image.Exposure`
         The exposure we are attempting to find the circles for.
 
-    config : 'dict'
+    config : `dict`
         Dictionary of the configuration options needed throughout the code.
 
-    seqNum : 'integer'
+    seqNum : `integer`
         The sequence number, this is purely needed for the plotting part, but
         will be asked for everytime.
 
-    path : 'string'
-        string, showing path where the extra plots would be saved.
+    path : `string`
+        Path where the extra plots will be saved. Ignored if doPlot=False.
 
-    doPlot : 'bool'
-        Boolean, whether we should do all the extra plotting or not.
+    doPlot : `bool`
+        Whether we should do all the extra plotting or not.
 
-    planeSkew : 'bool'
-        Boolean, wheter or not we should attempt to fit the flux to a plane.
+    doPlaneSkew : `bool`
+        Whether or not we should attempt to fit the flux to a plane.
 
-    useCutout ; 'bool'
-        Boolean, wheter to try and use the cutout feature to reduce image size.
+    useCutout : `bool`
+        Wheter to try and use the cutout feature to reduce image size.
 
     Returns
     -------
-    outer_circle : 'list'
-        list consisting of the cetroid position (x,y) and the radius of the
-        outer circle of the donut.
+    outer_circle : `list`
+        list of tuple consisting of the cetroid position (x,y) and the radius
+        of the outer circle of the donut.
 
-    inner_circle : 'list'
-        list consisting of the centroid position (x,y) and the radius of the
-        inner circle of the donut.
+    inner_circle : `list`
+        list of tuple consisting of the centroid position (x,y) and the radius
+        of the inner circle of the donut.
 
-    (Optional) plane_coefficient : 'list'
-        list of the coefficients (C) needed to plot a plane
+    plane_coefficient : `list`, optional
+        list of the coefficients (C) needed to plot a plane.
         z = C[0]*x = C[1]*y + C[2]
+        Will be np.Nan's if doPlaneSkew=False.
     """
     path = os.path.join(path, f"seq{seqNum:05}")
     if doPlot:
-        try:
-            os.makedirs(path, exist_ok=True)
-        except FileExistsError:
-            doPlot = False
-            print(f"Seems like a file exists at {path}, so we can't make a folder.")
-        except PermissionError:
-            doPlot = False
-            print(f"We cannot save the files to {path}, we lack permission.")
+        doPlot = _pathcheck(path)
 
     if useCutout:
         imexam = _examine(exp, config, path, doPlot)
@@ -165,31 +145,32 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
     else:
         image = np.array(exp.image.array)
 
-    norm_image, cutout_smoothed = _smoothNormalized(image, config, path, doPlot)
+    norm_image, cutout_smoothed = _getSmoothedAndNormalizedImages(image, config['kernel'],
+                                                                  config['normPercent'], config['skyPercent'],
+                                                                  path, doPlot)
 
-    # Now we have the normalized image, and we want to convert those to either
-    # being there or not
+    # Now we have the normalized image, and we want to convert to a mask of
+    # which part of the image we want to fit to.
 
-    int_image = _detectMask(norm_image, config, path, doPlot)
+    int_image = _makeIntegerMask(norm_image, config['maxclip'], path, doPlot)
 
     # Now calling cv2 to find the actual circles using a HoughCircles
     # transform.
 
     # Here, param1 and param2 are related to to how the cv2 method finds the
-    # edges of the circle,
-    # and the center respectively.
-    params_big = {'param1': 10, 'param2': 10, 'minRadius': int(config['outer_radius']),
-                  'maxRadius': int(1.2*config['outer_radius'])}
-    params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['inner_radius']),
-                    'maxRadius': int(1.2*config['inner_radius'])}
+    # edges of the circle, and the center respectively.
+    params_big = {'param1': 10, 'param2': 10, 'minRadius': int(config['outerRadius']),
+                  'maxRadius': int(1.2*config['outerRadius'])}
+    params_small = {'param1': 30, 'param2': 10, 'minRadius': int(config['innerRadius']),
+                    'maxRadius': int(1.2*config['innerRadius'])}
 
     outer_circle = np.empty(3)
     inner_circle = np.empty(3)
-    outer_circle = _applyHoughTransform(int_image, config['min_dist_outer'], params_big)
-    inner_circle = _applyHoughTransform(int_image, config['min_dist_inner'], params_small)
+    outer_circle = _applyHoughTransform(int_image, config['minDistOuter'], params_big)
+    inner_circle = _applyHoughTransform(int_image, config['minDistInner'], params_small)
     path2 = path
     if doPlot:
-        path = os.path.join(path, "detail5.png")
+        path = os.path.join(path, "circlefits.png")
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 10))
         for (x, y, r) in outer_circle:
             # draw the circle in the output image, then draw a rectangle
@@ -205,24 +186,27 @@ def findCircle(exp, config, seqNum, path, doPlot=False, planeSkew=False, useCuto
         ax2.imshow(int_image, origin='lower')
         fig.savefig(path)
 
-    if planeSkew:
-        plane_coefficient = _planeskew(cutout_smoothed, norm_image, config, path2, doPlot)
-        return outer_circle, inner_circle, plane_coefficient
+    if doPlaneSkew:
+        plane_coefficient = _findPlaneSkew(cutout_smoothed, norm_image, config['maxclip'], path2, doPlot)
     else:
-        return outer_circle, inner_circle
+        plane_coefficient = np.NaN
+
+    return outer_circle, inner_circle, plane_coefficient
 
 
 def _examine(exp, config, path, doPlot=False):
-    '''This function has been deprecated and should be deleted.'''
+    '''This function has been deprecated. It is only called if we need to
+    cutout the donut from a larger set of data.'''
     path = os.path.join(path, "detail1.png")
-    imexam = ImageExaminer(exp, boxHalfSize=config["Halfbox"], savePlots=path)
+    imexam = ImageExaminer(exp, boxHalfSize=config["halfbox"], savePlots=path)
     if doPlot:
         imexam.plot()
     return imexam
 
 
 def _cutOut(imexam, config, path, doPlot=False):
-    '''This function has been deprecated and should be deleted.'''
+    '''This function has been deprecated. It is only called if we need to
+    cutout the donut from a larger set of data.'''
     cutout = np.array(imexam.data)
     if doPlot:
         path = os.path.join(path, "detail2.png")
@@ -232,9 +216,9 @@ def _cutOut(imexam, config, path, doPlot=False):
     return cutout
 
 
-def _smoothNormalized(cutout, config, path, doPlot=False):
+def _getSmoothedAndNormalizedImages(cutout, kernel, normPercent, skyPercent, path, doPlot=False):
     # We smooth the cutout
-    cutoutSmoothed = cv2.GaussianBlur(cutout, (config["kernel"], config["kernel"]), 0)
+    cutoutSmoothed = cv2.GaussianBlur(cutout, (kernel, kernel), 0)
 
     halfbox = int(cutout.shape[0]/2)
     if doPlot:
@@ -243,8 +227,8 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
         ax2.plot(cutoutSmoothed[halfbox, :])
 
     # We normalize and remove background sky values:
-    normValue = np.percentile(cutoutSmoothed, config["normPercent"])
-    skyValue = np.percentile(cutoutSmoothed, config["skyPercent"])
+    normValue = np.percentile(cutoutSmoothed, normPercent)
+    skyValue = np.percentile(cutoutSmoothed, skyPercent)
 
     normImage = (cutoutSmoothed-skyValue)/normValue
 
@@ -257,20 +241,19 @@ def _smoothNormalized(cutout, config, path, doPlot=False):
     return normImage, cutoutSmoothed
 
 
-def _detectMask(normImage, config, path, doPlot):
+def _makeIntegerMask(normImage, maxclip, path, doPlot):
     # Adding the option that we can either use a predefined value,
     # or we can use an automatically calculated clip.
-    if "maxclip" in config.keys():
-        clip = config["maxclip"]
-    else:
+    if not maxclip:
         max_img = np.max(normImage)
         mean_img = np.mean(normImage)
-        clip = max_img/2 - mean_img
-    normMask = ma.getmask(ma.masked_greater_equal(normImage, clip))
+        maxclip = max_img/2 - mean_img
+
+    normMask = ma.getmask(ma.masked_greater_equal(normImage, maxclip))
     intImage = np.uint8(255*normMask)
 
     if doPlot:
-        path = os.path.join(path, "detail4.png")
+        path = os.path.join(path, "integerMask.png")
         fig = plt.figure()
         plt.imshow(intImage, origin='lower', cmap='RdGy')
         plt.colorbar()
@@ -286,21 +269,19 @@ def _applyHoughTransform(intImage, min_dist, params):
     return circle
 
 
-def _planeskew(smoothedImage, normImage, config, path, doPlot):
-    """ What if we wanted to also find the skew, of the flux plane? Here we
+def _findPlaneSkew(smoothedImage, normImage, maxclip, path, doPlot):
+    """What if we wanted to also find the skew, of the flux plane? Here we
     attempt to fit a plane to the normalized fluxes, so in case we do see that
     the flux is uneven across the image, we have the coefficients for a
     z = a*x + b*y + c plane. with z being the flux.
     This implementation is heavily inspired by the example given in
     https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
     """
-    if "maxclip" in config.keys():
-        clip = config["maxclip"]
-    else:
+    if not maxclip:
         max_img = np.max(normImage)
         mean_img = np.mean(normImage)
-        clip = max_img/2 - mean_img
-    nmi = ma.masked_less_equal(normImage, clip)
+        maxclip = max_img/2 - mean_img
+    nmi = ma.masked_less_equal(normImage, maxclip)
 
     if doPlot:
         path = os.path.join(path, "cutout.png")
@@ -321,21 +302,38 @@ def _planeskew(smoothedImage, normImage, config, path, doPlot):
     return c
 
 
+def _pathcheck(path):
+    try:
+        os.makedirs(path, exist_ok=True)
+        doPlot = True
+    except FileExistsError:
+        doPlot = False
+        print(f"Seems like a file exists at {path}, so we can't make a folder.")
+        print(" We have therefore turned off plotting.")
+    except PermissionError:
+        doPlot = False
+        print(f"We cannot save the files to {path}, we lack permission.")
+        print(" We have therefore turned off plotting.")
+    return doPlot
+
+
 def _getEfdData(client, dataSeries, startTime, endTime):
-    import asyncio
-    import nest_asyncio
-    nest_asyncio.apply()
     """A synchronous wrapper for geting the data from the EFD.
     This exists so that the top level functions don't all have to be async def.
     curtesy of Merlin Levine-Fisher.
     """
+    import asyncio
+    import nest_asyncio
+    # This is the magic that let's us call this asyncio loop from inside a
+    # jupyternotebook
+    nest_asyncio.apply()
+
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(client.select_time_series(dataSeries, ['*'], startTime, endTime))
 
 
 def get_efd_info(dayObs, seqNum, butler):
-    """ Wrapper that grabs the EFD info for each sequence, currently this
-    wrapper does not work, there seems to be an issue with asyncio."""
+    """ Wrapper that grabs the EFD info for each sequence"""
     from lsst_efd_client import EfdClient
     from lsst.rapid.analysis.butlerUtils import getExpIdFromDayObsSeqNum
 
@@ -353,18 +351,15 @@ def get_efd_info(dayObs, seqNum, butler):
     t_start = record.timespan.begin
     t_end = record.timespan.end
 
-    # hex_position =
-    # client.select_time_series("lsst.sal.ATHexapod.positionStatus", ['*'],
-    # t_start, t_end)
     hex_position = _getEfdData(client, "lsst.sal.ATHexapod.positionStatus", t_start.utc, t_end.utc)
     # This dictionary gives the hexapod names and indices
     # units for x,y,z in mm and u,v,w in degrees, according to
     # https://ts-xml.lsst.io/sal_interfaces/ATHexapod.html#positionupdate.
 
-    names = {'u': 3, 'v': 4, 'w': 5, 'x': 0, 'y': 1, 'z': 2}
+    names = ['x', 'y', 'z', 'u', 'v', 'w']
     positions = {}
-    for name in names.keys():
-        key = 'reportedPosition%d'%names[name]
+    for val, name in enumerate(names):
+        key = f'reportedPosition{val}'
         position = hex_position[key][0]
         positions[name] = position
 
