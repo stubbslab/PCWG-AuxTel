@@ -124,11 +124,11 @@ def findCircle(exp, config, seqNum, path, doPlot=False, doPlaneSkew=False, useCu
     Returns
     -------
     outer_circle : `list`
-        list of tuple consisting of the cetroid position (x,y) and the radius
+        Consisting of the cetroid position x, y and the radius
         of the outer circle of the donut.
 
     inner_circle : `list`
-        list of tuple consisting of the centroid position (x,y) and the radius
+        Consisting of the centroid position x, y and the radius
         of the inner circle of the donut.
 
     plane_coefficient : `list`, optional
