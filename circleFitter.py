@@ -86,7 +86,7 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
         expId = {}
         expId, position = get_efd_info(day_obs, seq_num, butler)
         expId.update(position)
-        efd_infos.append([expId])
+        efd_infos.append(expId)
         dxs.append(centration_offset[0, 0])
         dys.append(centration_offset[0, 1])
 
