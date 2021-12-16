@@ -39,8 +39,8 @@ def findCircles(day_obs, seq_nums, doPlot=False, planeSkew=False, config=None, p
 
     Returns
     -------
-    efd_infos : `list of tuple`
-        List of tuple of all relevant EFD data related to the exposures.
+    efd_infos : `list of dicts`
+        List of dicts of all relevant EFD data related to the exposures.
 
     dxs : `list`
         The displacements along the x-axis for all exposures.
