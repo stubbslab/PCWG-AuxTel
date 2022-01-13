@@ -149,10 +149,10 @@ class DonutFinder():
             try:
                 os.makedirs(path, exist_ok=True)
             except FileExistsError:
-                doPlot = False
+                self.doPlot = False
                 print(f"Seems like a file exists at {path}, so we can't make a folder.")
             except PermissionError:
-                doPlot = False
+                self.doPlot = False
                 print(f"We cannot save the files to {path}, we lack permission.")
 
         if useCutout:
