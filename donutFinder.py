@@ -17,7 +17,7 @@ class DonutFinder():
                  efdClient='summit_efd'):
         self.doPlot = doPlot
         if not path:
-            path = os.path.expanduser('~')
+            self.path = os.path.expanduser('~')
         else:
             self.path = path
         # instantiating the butler and efd clients
