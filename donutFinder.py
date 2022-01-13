@@ -81,6 +81,9 @@ class DonutFinder():
         self.results['coefficients'] = []
         self.results['data_Id'] = []
 
+        if config is not None:
+            self.config = config
+
         # Adding folder for details to the path
         self.path = os.path.join(self.path, f"detail_plots{day_obs}")
         self.logger.info(f" path for plots folder has been set to: {self.path}")
