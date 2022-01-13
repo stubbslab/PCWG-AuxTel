@@ -96,7 +96,7 @@ class DonutFinder():
             dataId = {'day_obs': day_obs, 'seq_num': seq_num, 'detector': 0}
             self.logger.info(f"running algorithm on: {dataId}")
 
-            exp = self.butler('quickLookExp', dataId)
+            exp = self.butler.get('quickLookExp', dataId)
             outer_circle, inner_circle, coef = self.findCircle(exp, dataId, useCutout)
 
             centration_offset = outer_circle - inner_circle
