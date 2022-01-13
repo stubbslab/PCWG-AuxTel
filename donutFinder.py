@@ -176,7 +176,7 @@ class DonutFinder():
         inner_circle = self._applyHoughTransform(int_image, self.config['minDistInner'], params_small)
         path2 = path
 
-        if doPlot:
+        if self.doPlot:
             path = os.path.join(path, "circlefits.png")
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 10))
             for (x, y, r) in outer_circle:
