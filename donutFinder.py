@@ -83,7 +83,7 @@ class DonutFinder():
 
         if config is not None:
             self.config = config
-
+        self.logger.info(f"running with the following configuration: {self.config}")
         # Adding folder for details to the path
         self.path = os.path.join(self.path, f"detail_plots{day_obs}")
         self.logger.info(f" path for plots folder has been set to: {self.path}")
@@ -254,6 +254,8 @@ class DonutFinder():
             max_img = np.max(normImage)
             mean_img = np.mean(normImage)
             maxclip = max_img/2 - mean_img
+        else:
+            maxclip = self.config['maxclip']
         nmi = ma.masked_less_equal(normImage, maxclip)
 
         if self.doPlot:
