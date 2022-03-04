@@ -1,4 +1,4 @@
-**IMPORTANT - READ FIRST:**
+**IMPORTANT - READ FIRST:**  
 This guide is for setting up the current nominal working environment.
 If you have made code changes to the packages mentioned which you want to keep: **do not run these instructions**.
 If you're a DESC person doing analysis work, or are unsure if this applies to you, it most likely doesn't, so don't panic, and read on :)
@@ -8,7 +8,7 @@ Rough work-flow:
 2. Open the RSP: https://lsst-lsp-stable.ncsa.illinois.edu/
 3. Select the correct container version (see below), and at least a Medium container
 4. Open a terminal and setup the stack (see below)
-5.
+5. 
     * First time: follow the setup instructions for cloning and setting up packages
     * subsequent times: you only need to do the `git checkout <branchname>` (if the branch has changed), but then _always_ `git fetch --all` and `git reset --hard origin/tickets/DM-<nnnnn>`.
 6. Check your `.user_setups` file (see below for instructions)
@@ -32,8 +32,8 @@ setup lsst_distrib
 
 User setups file
 ----------------
-Edited, using your favorite command line editor, with
-`<vi/emacs/ed> ${HOME}/notebooks/.user_setups`
+Edited, using your favorite command line editor, with  
+`<vi/emacs/ed> ${HOME}/notebooks/.user_setups`  
 You should have one line per package we're setting up for each package listed below, so your file should look like:
 ```
 setup -j rapid_analysis -r $HOME/repos/rapid_analysis
@@ -42,7 +42,7 @@ NB: You do not need to include any other packages, unless you know what you're d
 
 Versions: packages, the stack, reductions
 -----------------------------------------
-List of packages and their associated tickets:
+List of packages and their associated tickets:  
 ```
 rapid_analysis: tickets/DM-31522
 ```
