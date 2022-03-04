@@ -46,7 +46,7 @@ List of packages and their associated tickets:
 ```
 rapid_analysis: tickets/DM-31522
 ```
-Currently recommended stack version: `w_2022_09`
+Currently recommended stack version: `w_2022_09`  
 Currently recommended output collection: `u/mfl/PCWG_processing_1`
 
 
