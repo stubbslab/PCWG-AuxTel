@@ -339,7 +339,7 @@ class DonutFinder():
             pos = self.get_efd_info(dataId)
             print(f"Sequence {dataId['seq_num']} has positions x: {pos['x']} y: {pos['y']}")
 
-    def WFSinversion(self, dataId_1, dataId_2, config=None):
+    def WFSinversion(self, dataId_1, dataId_2, focus, config=None):
         ''' WORK IN PROGRESS, we work on 2 images at a time.
         '''
 
@@ -351,13 +351,13 @@ class DonutFinder():
         pos_1 = self.get_efd_info(dataId_1)
         pos_2 = self.get_efd_info(dataId_2)
 
-        if abs(pos_1['x']) == abs(pos_2['x']):
+        if abs(pos_1['x']-focus[0]) == abs(pos_2['x']-focus[0]):
             self.logger.info("we are comparing along x axis")
-        elif abs(pos_1['y']) == abs(pos_2['y']):
+        elif abs(pos_1['y']-focus[1]) == abs(pos_2['y']-focus[1]):
             self.logger.info('we are comparing along y axis')
         else:
             self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
-            self.logger.error(f"positions for image 1: {pos_1}, while for image 2: {pos_2}")
+            self.logger.error(f"positions for image 1: ({pos_1['x']-focus[0]}{pos_1['y']-focus[1]}), while for image 2: ({pos_2['x']-focus[0]},{pos_2['y']-focus[1]}")
             raise ValueError
 
         exp_1 = self.butler.get('quickLookExp', dataId_1)
