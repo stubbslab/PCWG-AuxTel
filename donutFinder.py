@@ -335,9 +335,14 @@ class DonutFinder():
 # What follows is a new addition to get WFS inversion
 
     def positions(self, dataIds, focus):
+        fig = plt.figure(figsize=(10, 10))
+
         for dataId in dataIds:
             pos = self.get_efd_info(dataId)
             print(f"Sequence {dataId['seq_num']} has positions x: {pos['x']-focus[0]} y: {pos['y']-focus[1]}")
+            plt.scatter(pos['x']-focus[0], pos['y']-focus[1])
+
+        fig.show()
 
     def WFSinversion(self, dataId_1, dataId_2, focus, config=None):
         ''' WORK IN PROGRESS, we work on 2 images at a time.
