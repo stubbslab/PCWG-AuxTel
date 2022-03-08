@@ -220,12 +220,13 @@ class DonutFinder():
     def _detectMask(self, norm_image):
         # Adding the option that we can either use a predefined value,
         # or we can use an automatically calculated clip.
-        if not self.config['maxclip']:
+        if 'maxclip' in self.config:
+            maxclip = self.config['maxclip']
+        else:
             max_img = np.max(norm_image)
             mean_img = np.mean(norm_image)
             maxclip = max_img/2 - mean_img
-        else:
-            maxclip = self.config['maxclip']
+
 
         normMask = ma.getmask(ma.masked_greater_equal(norm_image, maxclip))
         intImage = np.uint8(255*normMask)
@@ -267,12 +268,13 @@ class DonutFinder():
         return c
 
     def _makeMask(self, normImage):
-        if not self.config['maxclip']:
+        if 'maxclip' in self.config:
+            maxclip = self.config['maxclip']
+        else:
             max_img = np.max(normImage)
             mean_img = np.mean(normImage)
             maxclip = max_img/2 - mean_img
-        else:
-            maxclip = self.config['maxclip']
+
         nmi = ma.masked_less_equal(normImage, maxclip)
         mask = ma.getmask(nmi)
         return nmi, mask
