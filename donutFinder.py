@@ -352,6 +352,7 @@ class DonutFinder():
             self.logger.info('we are comparing along y axis')
         else:
             self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
+            self.logger.error(f"positions for image 1: {pos_1}, while for image 2: {pos_2}")
             raise ValueError
 
         exp_1 = self.butler.get('quickLookExp', dataId_1)
