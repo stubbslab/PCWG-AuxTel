@@ -11,6 +11,7 @@ import lsst.rapid.analysis.butlerUtils as butlerUtils
 from lsst_efd_client import EfdClient
 import os
 import logging
+import math
 
 
 class DonutFinder():
@@ -356,9 +357,9 @@ class DonutFinder():
         pos_1 = self.get_efd_info(dataId_1)
         pos_2 = self.get_efd_info(dataId_2)
 
-        if abs(pos_1['x']-focus[0]) == abs(pos_2['x']-focus[0]):
+        if math.isclose(abs(pos_1['x']-focus[0]), abs(pos_2['x']-focus[0])):
             self.logger.info("we are comparing along x axis")
-        elif abs(pos_1['y']-focus[1]) == abs(pos_2['y']-focus[1]):
+        elif math.isclose(abs(pos_1['y']-focus[1]),abs(pos_2['y']-focus[1])):
             self.logger.info('we are comparing along y axis')
         else:
             self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
