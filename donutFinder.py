@@ -334,6 +334,11 @@ class DonutFinder():
 
 # What follows is a new addition to get WFS inversion
 
+    def positions(self, dataIds):
+        for dataId in dataIds:
+            pos = self.get_efd_info(dataId)
+            print(f"Sequence {dataId['seq_num']} has positions x: {pos['x']} y: {pos['y']}")
+
     def WFSinversion(self, dataId_1, dataId_2, config=None):
         ''' WORK IN PROGRESS, we work on 2 images at a time.
         '''
