@@ -1,6 +1,7 @@
 # This is the attempt at a class based update for the donut finding code.
 # This should make it possible to better keep track of information, and ease
 # future debugging issues
+from distutils.log import error
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,18 +46,15 @@ class DonutFinder():
         # Generating an empty dict, that we can collect results in
         self.results = {}
 
-    def findCircles(self, day_obs, seq_nums, useCutout=False, config=None):
+    def findCircles(self, dataIds, useCutout=False, config=None):
         """Let's find all the circles! this function simply loops over a
-        sequence list (seq_List) the function FindCircle, which does all
+        list of exposures (dataIds) the function FindCircle, which does all
         the work for a single exposure.
 
         Parameters
         ----------
-        day_obs : `string`
-            The observation date we are looking to find circles for.
-
-        seq_nums : `iterable`
-            The iterable of sequences we are hoping to obtain exposures for.
+        dataIds : `list`
+            list of dataIds of the exposures that we want to find circles for.
 
         config : `dict`
             Optional configuration dictionary, if not provided we will use a
@@ -72,8 +70,7 @@ class DonutFinder():
             add results for the efd_infos, the displacements in
             x and y (dxs, dys) and coefficients for the flux skew.
         """
-        self.logger.info(f"Starting findCircles for {day_obs}")
-        self.logger.info(f"using the following sequences: {seq_nums}")
+        self.logger.info(f"Starting findCircles for {dataIds}")
 
         self.results['positions'] = []
         self.results['dxs'] = []
@@ -84,16 +81,12 @@ class DonutFinder():
         if config is not None:
             self.config = config
         self.logger.info(f"running with the following configuration: {self.config}")
-        # Adding folder for details to the path
-        self.path = os.path.join(self.path, f"detail_plots{day_obs}")
-        self.logger.info(f" path for plots folder has been set to: {self.path}")
 
         # starting the main loop, running over all sequences given
-        for seq_num in seq_nums:
+        for dataId in dataIds:
             outer_circle = np.zeros(3, dtype=int)
             inner_circle = np.zeros(3, dtype=int)
 
-            dataId = {'day_obs': day_obs, 'seq_num': seq_num, 'detector': 0}
             self.logger.info(f"running algorithm on: {dataId}")
 
             exp = self.butler.get('quickLookExp', dataId)
@@ -141,7 +134,9 @@ class DonutFinder():
             list of the coefficients (C) needed to plot a plane.
             z = C[0]*x = C[1]*y + C[2]
         """
-        path = os.path.join(self.path, f"seq{dataId['seq_num']:05}")
+        path = os.path.join(self.path, f"detail_plots{dataId['day_obs']}", f"seq{dataId['seq_num']:05}")
+        self.logger.info(f" path for plots folder has been set to: {path}")
+
         if self.doPlot:
             self._pathcheck(path)
 
@@ -250,13 +245,8 @@ class DonutFinder():
         This implementation is heavily inspired by the example given in
         https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
         """
-        if not self.config['maxclip']:
-            max_img = np.max(normImage)
-            mean_img = np.mean(normImage)
-            maxclip = max_img/2 - mean_img
-        else:
-            maxclip = self.config['maxclip']
-        nmi = ma.masked_less_equal(normImage, maxclip)
+
+        nmi, mask = self._makeMask(normImage)
 
         if self.doPlot:
             path = os.path.join(path, "cutout.png")
@@ -266,7 +256,6 @@ class DonutFinder():
             fig.savefig(path)
 
         grid = np.indices(nmi.shape)
-        mask = ma.getmask(nmi)
         y = ma.array(grid[0], mask=mask)
         x = ma.array(grid[1], mask=mask)
         z = ma.array(normImage, mask=mask)
@@ -275,6 +264,17 @@ class DonutFinder():
         import scipy.linalg as linalg
         c, _, _, _ = linalg.lstsq(a, data[:, 2])
         return c
+
+    def _makeMask(self, normImage):
+        if not self.config['maxclip']:
+            max_img = np.max(normImage)
+            mean_img = np.mean(normImage)
+            maxclip = max_img/2 - mean_img
+        else:
+            maxclip = self.config['maxclip']
+        nmi = ma.masked_less_equal(normImage, maxclip)
+        mask = ma.getmask(nmi)
+        return nmi, mask
 
     def _pathcheck(self, path):
         try:
@@ -331,3 +331,45 @@ class DonutFinder():
             positions[name] = position
 
         return positions
+
+# What follows is a new addition to get WFS inversion
+
+    def WFSinversion(self, dataId_1, dataId_2):
+        ''' WORK IN PROGRESS, we work on 2 images at a time.
+        '''
+        # Let's start by grabbing positions:
+        pos_1 = self.get_efd_info(dataId_1)
+        pos_2 = self.get_efd_info(dataId_2)
+
+        if abs(pos_1['x']) == abs(pos_2['x']):
+            self.logger.info("we are comparing along x axis")
+        elif abs(pos_1['y']) == abs(pos_2['y']):
+            self.logger.info('we are comparing along y axis')
+        else:
+            self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
+
+        exp_1 = self.butler.get('quickLookExp', dataId_1)
+        exp_2 = self.butler.get('quickLookExp', dataId_2)
+
+        image_1 = np.array(exp_1.image.array)
+        image_2 = np.array(exp_2.image.array)
+
+        norm_image_1, _ = self._smoothNormalized(image_1)
+        norm_image_2, _ = self._smoothNormalized(image_2)
+
+        _, mask_1 = self._makeMask(norm_image_1)
+        _, mask_2 = self._makeMask(norm_image_2)
+
+        masked_image_1 = np.array(image_1, mask=mask_1)
+        masked_image_2 = np.array(image_2, mask=mask_2)
+
+        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+        axs[0, 0].imshow(masked_image_1, origin='lower', label='masked_image 1')
+        axs[0, 1].imshow(masked_image_2, origin='lower', label='masked_image 2')
+
+        difference = masked_image_1 - masked_image_2
+        addition = masked_image_1 + masked_image_2
+        axs[1, 0].imshow(difference, origin='lower', label='difference')
+        axs[1, 1].imshow(addition, origin='lower', label='addition')
+
+        fig.show()
