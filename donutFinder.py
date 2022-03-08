@@ -135,9 +135,9 @@ class DonutFinder():
             z = C[0]*x = C[1]*y + C[2]
         """
         path = os.path.join(self.path, f"detail_plots{dataId['day_obs']}", f"seq{dataId['seq_num']:05}")
-        self.logger.info(f" path for plots folder has been set to: {path}")
 
         if self.doPlot:
+            self.logger.info(f" path for plots folder has been set to: {path}")
             self._pathcheck(path)
 
         if self.doPlot:
@@ -334,9 +334,14 @@ class DonutFinder():
 
 # What follows is a new addition to get WFS inversion
 
-    def WFSinversion(self, dataId_1, dataId_2):
+    def WFSinversion(self, dataId_1, dataId_2, config=None):
         ''' WORK IN PROGRESS, we work on 2 images at a time.
         '''
+
+        if config is not None:
+            self.config = config
+        self.logger.info(f"running with the following configuration: {self.config}")
+
         # Let's start by grabbing positions:
         pos_1 = self.get_efd_info(dataId_1)
         pos_2 = self.get_efd_info(dataId_2)
@@ -347,6 +352,7 @@ class DonutFinder():
             self.logger.info('we are comparing along y axis')
         else:
             self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
+            raise ValueError
 
         exp_1 = self.butler.get('quickLookExp', dataId_1)
         exp_2 = self.butler.get('quickLookExp', dataId_2)
