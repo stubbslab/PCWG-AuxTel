@@ -380,8 +380,8 @@ class DonutFinder():
         _, mask_1 = self._makeMask(norm_image_1)
         _, mask_2 = self._makeMask(norm_image_2)
 
-        masked_image_1 = np.array(image_1, mask=mask_1)
-        masked_image_2 = np.array(image_2, mask=mask_2)
+        masked_image_1 = ma.array(image_1, mask=mask_1)
+        masked_image_2 = ma.array(image_2, mask=mask_2)
 
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
         axs[0, 0].imshow(masked_image_1, origin='lower', label='masked_image 1')
