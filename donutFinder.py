@@ -393,3 +393,5 @@ class DonutFinder():
         axs[1, 1].imshow(addition, origin='lower', label='addition')
 
         fig.show()
+
+        return masked_image_1, masked_image_2, difference, addition
