@@ -411,7 +411,7 @@ class DonutFinder():
         axs[0, 1].set_title('masked_image 2')
 
         difference = cut_masked_image_1 - flipped_cm_image_2
-        average = ma.average(ma.array(cut_masked_image_1, flipped_cm_image_2), axis=0)
+        average = ma.array((cut_masked_image_1, flipped_cm_image_2)).mean(axis=0)
         axs[1, 0].imshow(difference, origin='lower')
         axs[1, 0].set_title('difference')
         axs[1, 1].imshow(average, origin='lower')
