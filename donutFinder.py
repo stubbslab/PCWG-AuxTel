@@ -392,7 +392,7 @@ class DonutFinder():
 
         # Selecting the larger of the two radii to use for cutting the donuts
         # out with.
-        radii = np.max(outer_circle_1[0][2], outer_circle_2[0][2])
+        radii = max(outer_circle_1[0][2], outer_circle_2[0][2])
 
         # Reducing our image to only the donut, centered on
         # the outer circle's center.
