@@ -435,7 +435,7 @@ class DonutFinder():
 
         pixel_tilt = np.zeros_like(corrected_rel_diff)
 
-        for i,j in np.nditer(pixel_tilt):
+        for (i,j) in np.nditer(pixel_tilt):
             pixel_tilt[i,j] = np.sqrt(x_tilt[i]**2 + y_tilt[j]**2)
 
         return x_tilt, y_tilt, pixel_tilt
