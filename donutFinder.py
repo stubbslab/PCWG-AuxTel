@@ -402,7 +402,7 @@ class DonutFinder():
                                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
 
         # flip image 2:
-        flipped_cm_image_2 = np.flip(cut_masked_image_2)
+        flipped_cm_image_2 = ma.flip(cut_masked_image_2)
 
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
         axs[0, 0].imshow(cut_masked_image_1, origin='lower')
@@ -411,7 +411,7 @@ class DonutFinder():
         axs[0, 1].set_title('masked_image 2')
 
         difference = cut_masked_image_1 - flipped_cm_image_2
-        average = np.average(np.array(cut_masked_image_1, flipped_cm_image_2), axis=0)
+        average = ma.average(np.array(cut_masked_image_1, flipped_cm_image_2), axis=0)
         axs[1, 0].imshow(difference, origin='lower')
         axs[1, 0].set_title('difference')
         axs[1, 1].imshow(average, origin='lower')
