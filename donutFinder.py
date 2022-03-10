@@ -105,7 +105,7 @@ class DonutFinder():
 
         return self.results
 
-    def findCircle(self, dataId, useCutout=False):
+    def findCircle(self, dataId, useCutout=False, config=None):
         """This function does all the tricks to find the circle for a single
         exposure and returns the inner and outer circles for it.
 
@@ -131,6 +131,10 @@ class DonutFinder():
             list of the coefficients (C) needed to plot a plane.
             z = C[0]*x = C[1]*y + C[2]
         """
+        if config is not None:
+            self.config = config
+        self.logger.info(f"running with the following configuration: {self.config}")
+
         path = os.path.join(self.path, f"detail_plots{dataId['day_obs']}", f"seq{dataId['seq_num']:05}")
 
         if self.doPlot:
