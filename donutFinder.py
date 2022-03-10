@@ -367,7 +367,8 @@ class DonutFinder():
             self.logger.info('we are comparing along y axis')
         else:
             self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
-            self.logger.error(f"positions for image 1: ({pos_1['x']-focus[0]},{pos_1['y']-focus[1]}), while for image 2: ({pos_2['x']-focus[0]},{pos_2['y']-focus[1]}")
+            self.logger.error(f"positions for image 1: ({pos_1['x']-focus[0]},{pos_1['y']-focus[1]})")
+            self.logger.error(f"while for image 2: ({pos_2['x']-focus[0]},{pos_2['y']-focus[1]}")
             raise ValueError
 
         exp_1 = self.butler.get('quickLookExp', dataId_1)
@@ -385,19 +386,56 @@ class DonutFinder():
         masked_image_1 = ma.array(image_1, mask=mask_1)
         masked_image_2 = ma.array(image_2, mask=mask_2)
 
+        # Getting the details for the outer circle
+        outer_circle_1, _, _ = self.findCircle(dataId_1)
+        outer_circle_2, _, _ = self.findCircle(dataId_2)
+
+        # Selecting the larger of the two radii to use for cutting the donuts
+        # out with.
+        radii = np.max(outer_circle_1[0][2], outer_circle_2[0][2])
+
+        # Reducing our image to only the donut, centered on
+        # the outer circle's center.
+        cut_masked_image_1 = masked_image_1[outer_circle_1[0][1]-radii:outer_circle_1[0][1]+radii,
+                                            outer_circle_1[0][0]-radii:outer_circle_1[0][0]+radii]
+        cut_masked_image_2 = masked_image_2[outer_circle_2[0][1]-radii:outer_circle_2[0][1]+radii,
+                                            outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
+
+        # flip image 2:
+        flipped_cm_image_2 = np.flip(cut_masked_image_2)
+
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-        axs[0, 0].imshow(masked_image_1, origin='lower')
+        axs[0, 0].imshow(cut_masked_image_1, origin='lower')
         axs[0, 0].set_title('masked_image 1')
-        axs[0, 1].imshow(masked_image_2, origin='lower')
+        axs[0, 1].imshow(flipped_cm_image_2, origin='lower')
         axs[0, 1].set_title('masked_image 2')
 
-        difference = masked_image_1 - masked_image_2
-        addition = masked_image_1 + masked_image_2
+        difference = cut_masked_image_1 - flipped_cm_image_2
+        average = np.average(np.array(cut_masked_image_1, flipped_cm_image_2), axis=0)
         axs[1, 0].imshow(difference, origin='lower')
         axs[1, 0].set_title('difference')
-        axs[1, 1].imshow(addition, origin='lower')
+        axs[1, 1].imshow(average, origin='lower')
         axs[1, 1].set_title('addition')
 
         fig.show()
 
-        return masked_image_1, masked_image_2, difference, addition
+        # Step 6 in Chris's plan
+        rel_diff = np.divide(difference, average)
+
+        summed = np.sum(rel_diff)
+
+        # Missing step 6.25
+
+        corrected_rel_diff = rel_diff - summed
+
+        # Missing steps 7.5
+
+        x_tilt = np.trapz(corrected_rel_diff, axis=0)
+        y_tilt = np.trapz(corrected_rel_diff, axis=1)
+
+        pixel_tilt = np.zeros_like(corrected_rel_diff)
+
+        for i,j in pixel_tilt.shape:
+            pixel_tilt[i,j] = np.sqrt(x_tilt[i]**2 + y_tilt[j]**2)
+
+        return x_tilt, y_tilt, pixel_tilt
