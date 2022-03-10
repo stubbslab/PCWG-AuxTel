@@ -90,8 +90,7 @@ class DonutFinder():
 
             self.logger.info(f"running algorithm on: {dataId}")
 
-            exp = self.butler.get('quickLookExp', dataId)
-            outer_circle, inner_circle, coef = self.findCircle(exp, dataId, useCutout)
+            outer_circle, inner_circle, coef = self.findCircle(dataId, useCutout)
 
             centration_offset = outer_circle - inner_circle
 
@@ -106,15 +105,12 @@ class DonutFinder():
 
         return self.results
 
-    def findCircle(self, exp, dataId, useCutout=False):
+    def findCircle(self, dataId, useCutout=False):
         """This function does all the tricks to find the circle for a single
         exposure and returns the inner and outer circles for it.
 
         Parameters
         ----------
-        exp : `lsst.afw.image.Exposure`
-        The exposure we are attempting to find the circles for.
-
         dataId : `dict`
             Dictionary of Id for the exposure we are attempting to anlyze.
 
@@ -150,6 +146,8 @@ class DonutFinder():
             except PermissionError:
                 self.doPlot = False
                 print(f"We cannot save the files to {path}, we lack permission.")
+
+        exp = self.butler.get('quickLookExp', dataId)
 
         if useCutout:
             imexam = self._examine(exp)
@@ -384,13 +382,17 @@ class DonutFinder():
         masked_image_2 = ma.array(image_2, mask=mask_2)
 
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-        axs[0, 0].imshow(masked_image_1, origin='lower', label='masked_image 1')
-        axs[0, 1].imshow(masked_image_2, origin='lower', label='masked_image 2')
+        axs[0, 0].imshow(masked_image_1, origin='lower')
+        axs[0, 0].set_title('masked_image 1')
+        axs[0, 1].imshow(masked_image_2, origin='lower')
+        axs[0, 1].set_title('masked_image 2')
 
         difference = masked_image_1 - masked_image_2
         addition = masked_image_1 + masked_image_2
-        axs[1, 0].imshow(difference, origin='lower', label='difference')
-        axs[1, 1].imshow(addition, origin='lower', label='addition')
+        axs[1, 0].imshow(difference, origin='lower')
+        axs[1, 0].set_title('difference')
+        axs[1, 1].imshow(addition, origin='lower')
+        axs[1, 1].set_title('addition')
 
         fig.show()
 
