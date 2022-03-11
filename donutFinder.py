@@ -430,8 +430,8 @@ class DonutFinder():
 
 
         fig2, ax2 = plt.subplots(1,2, figsize=(10, 10))
-        ax2[0,0].imshow(rel_diff, origin='lower')
-        ax2[0,1].imshow(corrected_rel_diff, origin='lower')
+        ax2[0].imshow(rel_diff, origin='lower')
+        ax2[1].imshow(corrected_rel_diff, origin='lower')
         ax2.set_title('Relative difference')
         ax2.set_title('corrected relative difference')
 
