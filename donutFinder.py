@@ -415,7 +415,7 @@ class DonutFinder():
         axs[1, 0].imshow(difference, origin='lower')
         axs[1, 0].set_title('difference')
         axs[1, 1].imshow(average, origin='lower')
-        axs[1, 1].set_title('addition')
+        axs[1, 1].set_title('average')
 
         fig.show()
 
@@ -428,6 +428,14 @@ class DonutFinder():
 
         corrected_rel_diff = rel_diff - summed
 
+
+        fig2, ax2 = plt.subplots(1,2, figsize=(10, 10))
+        ax2[0,0].imshow(rel_diff, origin='lower')
+        ax2[0,1].imshow(corrected_rel_diff, origin='lower')
+        ax2.set_title('Relative difference')
+        ax2.set_title('corrected relative difference')
+
+        fig2.show()
         # Missing steps 7.5
 
         x_tilt = np.trapz(corrected_rel_diff, axis=0)
