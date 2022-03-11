@@ -428,7 +428,6 @@ class DonutFinder():
 
         corrected_rel_diff = rel_diff - summed
 
-
         fig2, ax2 = plt.subplots(1,2, figsize=(10, 10))
         ax2[0].imshow(rel_diff, origin='lower')
         ax2[1].imshow(corrected_rel_diff, origin='lower')
