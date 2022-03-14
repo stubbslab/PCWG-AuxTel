@@ -410,21 +410,21 @@ class DonutFinder():
         #flipped_cm_image_2 = ma.array(flipped_c_image_2, mask=flip_mask_2)
 
         fig, axs = plt.subplots(1, 3, figsize=(10, 10))
-        axs[0, 0].imshow(cut_masked_image_1, origin='lower')
-        axs[0, 0].set_title('image 1')
-        axs[0, 1].imshow(cut_masked_image_2, origin='lower')
-        axs[0, 1].set_title('image 2')
-        axs[0, 2].imshow(flipped_cm_image_2, origin='lower')
-        axs[0, 2].set_title('flipped image')
+        axs[0].imshow(cut_masked_image_1, origin='lower')
+        axs[0].set_title('image 1')
+        axs[1].imshow(cut_masked_image_2, origin='lower')
+        axs[1].set_title('image 2')
+        axs[2].imshow(flipped_cm_image_2, origin='lower')
+        axs[2].set_title('flipped image')
 
         fig.show()
         fig3, axs3 = plt.subplots(1,2, figsize=(10,10))
         difference = cut_masked_image_1 - flipped_cm_image_2
         average = ma.array((cut_masked_image_1, flipped_cm_image_2)).mean(axis=0)
-        axs3[0, 0].imshow(difference, origin='lower')
-        axs3[0, 0].set_title('difference')
-        axs3[0, 1].imshow(average, origin='lower')
-        axs3[0, 1].set_title('average')
+        axs3[0].imshow(difference, origin='lower')
+        axs3[0].set_title('difference')
+        axs3[1].imshow(average, origin='lower')
+        axs3[1].set_title('average')
         
         fig3.show()
 
