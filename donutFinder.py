@@ -229,7 +229,6 @@ class DonutFinder():
             mean_img = np.mean(norm_image)
             maxclip = max_img/2 - mean_img
 
-
         normMask = ma.getmask(ma.masked_greater_equal(norm_image, maxclip))
         intImage = np.uint8(255*normMask)
 
@@ -363,7 +362,7 @@ class DonutFinder():
 
         if math.isclose(abs(pos_1['x']-focus[0]), abs(pos_2['x']-focus[0]), rel_tol=0.05):
             self.logger.info("we are comparing along x axis")
-        elif math.isclose(abs(pos_1['y']-focus[1]),abs(pos_2['y']-focus[1]), rel_tol=0.05):
+        elif math.isclose(abs(pos_1['y']-focus[1]), abs(pos_2['y']-focus[1]), rel_tol=0.05):
             self.logger.info('we are comparing along y axis')
         else:
             self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
@@ -401,13 +400,7 @@ class DonutFinder():
         cut_masked_image_2 = masked_image_2[outer_circle_2[0][1]-radii:outer_circle_2[0][1]+radii,
                                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
         # flip image 2:
-        #cut_masked_image_2.mask = ma.nomask
         flipped_cm_image_2 = np.flip(cut_masked_image_2)
-        #flip_mask_2 = np.flip(cut_mask_2)
-        #print(cut_mask_2.shape)
-        #print(flip_mask_2)
-        #print(flip_mask_2.shape, flipped_c_image_2.shape)
-        #flipped_cm_image_2 = ma.array(flipped_c_image_2, mask=flip_mask_2)
 
         fig, axs = plt.subplots(1, 3, figsize=(10, 10))
         axs[0].imshow(cut_masked_image_1, origin='lower')
@@ -418,14 +411,15 @@ class DonutFinder():
         axs[2].set_title('flipped image 2')
 
         fig.show()
-        fig3, axs3 = plt.subplots(1,2, figsize=(10,10))
+
+        fig3, axs3 = plt.subplots(1, 2, figsize=(10, 10))
         difference = cut_masked_image_1 - flipped_cm_image_2
         average = ma.array((cut_masked_image_1, flipped_cm_image_2)).mean(axis=0)
         axs3[0].imshow(difference, origin='lower')
         axs3[0].set_title('difference')
         axs3[1].imshow(average, origin='lower')
         axs3[1].set_title('average')
-        
+
         fig3.show()
 
         # Step 6 in Chris's plan
@@ -436,8 +430,8 @@ class DonutFinder():
 
         # Missing step 6.25
 
-        corrected_rel_diff_x = rel_diff - summed_x 
-        corrected_rel_diff_y = rel_diff - summed_y[:,None]
+        corrected_rel_diff_x = rel_diff - summed_x
+        corrected_rel_diff_y = rel_diff - summed_y[:, None]
 
         fig2, ax2 = plt.subplots(1, 2, figsize=(10, 10))
         ax2[0].imshow(corrected_rel_diff_x, origin='lower')
@@ -453,7 +447,7 @@ class DonutFinder():
 
         pixel_tilt = ma.sqrt(x_tilt**2+y_tilt**2)
 
-        fig4, axs4 = plt.subplots(1,3, figsize=(10, 10))
+        fig4, axs4 = plt.subplots(1, 3, figsize=(10, 10))
         axs4[0].imshow(x_tilt, origin='lower')
         axs4[0].set_title('x tilt')
         axs4[1].imshow(y_tilt, origin='lower')
@@ -462,5 +456,11 @@ class DonutFinder():
         axs4[2].set_title('pixel tilt')
 
         fig4.show()
+
+        # Saving figures
+        fig.savefig('initialimages.png')
+        fig2.savefig('relative_differences.png')
+        fig3.savefig('difference_and_averages.png')
+        fig4.savefig('tilts.png')
 
         return x_tilt, y_tilt, pixel_tilt
