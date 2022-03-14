@@ -402,7 +402,7 @@ class DonutFinder():
                                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
         # flip image 2:
         #cut_masked_image_2.mask = ma.nomask
-        flipped_cm_image_2 = cut_masked_image_2#np.flip(cut_masked_image_2)
+        flipped_cm_image_2 = np.flip(cut_masked_image_2)
         #flip_mask_2 = np.flip(cut_mask_2)
         #print(cut_mask_2.shape)
         #print(flip_mask_2)
@@ -439,7 +439,7 @@ class DonutFinder():
         corrected_rel_diff_x = rel_diff - summed_x 
         corrected_rel_diff_y = rel_diff - summed_y[:,None]
 
-        fig2, ax2 = plt.subplots(1,2, figsize=(10, 10))
+        fig2, ax2 = plt.subplots(1, 2, figsize=(10, 10))
         ax2[0].imshow(corrected_rel_diff_x, origin='lower')
         ax2[1].imshow(corrected_rel_diff_y, origin='lower')
         ax2[0].set_title('corrected relative difference x')
@@ -451,6 +451,16 @@ class DonutFinder():
         x_tilt = corrected_rel_diff_x.cumsum(axis=0)
         y_tilt = corrected_rel_diff_y.cumsum(axis=1)
 
-        pixel_tilt = ma.sqrt(x_tilt**2 +y_tilt**2)
+        pixel_tilt = ma.sqrt(x_tilt**2+y_tilt**2)
+
+        fig4, axs4 = plt.subplots(1,3, figsize=(10, 10))
+        axs4[0].imshow(x_tilt, origin='lower')
+        axs4[0].set_title('x tilt')
+        axs4[1].imshow(y_tilt, origin='lower')
+        axs4[1].set_title('y tilt')
+        axs4[2].imshow(pixel_tilt)
+        axs4[2].set_title('pixel tilt')
+
+        fig4.show()
 
         return x_tilt, y_tilt, pixel_tilt
