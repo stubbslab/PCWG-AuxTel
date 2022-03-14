@@ -400,11 +400,9 @@ class DonutFinder():
                                             outer_circle_1[0][0]-radii:outer_circle_1[0][0]+radii]
         cut_masked_image_2 = masked_image_2[outer_circle_2[0][1]-radii:outer_circle_2[0][1]+radii,
                                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
-        cut_mask_2 = mask_2[outer_circle_2[0][1]-radii:outer_circle_2[0][1]+radii,
-                            outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
         # flip image 2:
         #cut_masked_image_2.mask = ma.nomask
-        flipped_cm_image_2 = np.flip(cut_masked_image_2)
+        flipped_cm_image_2 = np.flip(cut_masked_image_2, axis = 1)
         #flip_mask_2 = np.flip(cut_mask_2)
         #print(cut_mask_2.shape)
         #print(flip_mask_2)
