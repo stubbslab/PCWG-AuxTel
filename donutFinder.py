@@ -402,7 +402,7 @@ class DonutFinder():
                                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
 
         # flip image 2:
-        flipped_cm_image_2 = np.flip(cut_masked_image_2)
+        flipped_cm_image_2 = ma.flip(cut_masked_image_2)
 
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
         axs[0, 0].imshow(cut_masked_image_1, origin='lower')
@@ -416,13 +416,13 @@ class DonutFinder():
         axs[1, 0].set_title('difference')
         axs[1, 1].imshow(average, origin='lower')
         axs[1, 1].set_title('average')
-
+        
         fig.show()
 
         # Step 6 in Chris's plan
-        rel_diff = np.divide(difference, average)
+        rel_diff = ma.divide(difference, average)
 
-        summed = np.sum(rel_diff)
+        summed = ma.sum(rel_diff)
 
         # Missing step 6.25
 
