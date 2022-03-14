@@ -402,7 +402,7 @@ class DonutFinder():
                                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
         # flip image 2:
         #cut_masked_image_2.mask = ma.nomask
-        flipped_cm_image_2 = np.flip(cut_masked_image_2, axis=0)
+        flipped_cm_image_2 = cut_masked_image_2#np.flip(cut_masked_image_2)
         #flip_mask_2 = np.flip(cut_mask_2)
         #print(cut_mask_2.shape)
         #print(flip_mask_2)
@@ -415,7 +415,7 @@ class DonutFinder():
         axs[1].imshow(cut_masked_image_2, origin='lower')
         axs[1].set_title('image 2')
         axs[2].imshow(flipped_cm_image_2, origin='lower')
-        axs[2].set_title('flipped image')
+        axs[2].set_title('flipped image 2')
 
         fig.show()
         fig3, axs3 = plt.subplots(1,2, figsize=(10,10))
@@ -431,28 +431,26 @@ class DonutFinder():
         # Step 6 in Chris's plan
         rel_diff = ma.divide(difference, average)
 
-        summed = ma.sum(rel_diff)
+        summed_x = rel_diff.sum(axis=0)
+        summed_y = rel_diff.sum(axis=1)
 
         # Missing step 6.25
 
-        corrected_rel_diff = rel_diff - summed
+        corrected_rel_diff_x = rel_diff - summed_x 
+        corrected_rel_diff_y = rel_diff - summed_y[:,None]
 
         fig2, ax2 = plt.subplots(1,2, figsize=(10, 10))
-        ax2[0].imshow(rel_diff, origin='lower')
-        ax2[1].imshow(corrected_rel_diff, origin='lower')
-        ax2[0].set_title('Relative difference')
-        ax2[1].set_title('corrected relative difference')
+        ax2[0].imshow(corrected_rel_diff_x, origin='lower')
+        ax2[1].imshow(corrected_rel_diff_y, origin='lower')
+        ax2[0].set_title('corrected relative difference x')
+        ax2[1].set_title('corrected relative difference y')
 
         fig2.show()
         # Missing steps 7.5
 
-        x_tilt = np.trapz(corrected_rel_diff, axis=0)
-        y_tilt = np.trapz(corrected_rel_diff, axis=1)
+        x_tilt = corrected_rel_diff_x.cumsum(axis=0)
+        y_tilt = corrected_rel_diff_y.cumsum(axis=1)
 
-        pixel_tilt = np.zeros_like(corrected_rel_diff)
-
-        for i in range(len(x_tilt)):
-            for j in range(len(y_tilt)):
-                pixel_tilt[i, j] = np.sqrt(x_tilt[i]**2 + y_tilt[j]**2)
+        pixel_tilt = ma.sqrt(x_tilt**2 +y_tilt**2)
 
         return x_tilt, y_tilt, pixel_tilt
