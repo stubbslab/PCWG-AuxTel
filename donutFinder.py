@@ -403,19 +403,19 @@ class DonutFinder():
         cut_mask_2 = mask_2[outer_circle_2[0][1]-radii:outer_circle_2[0][1]+radii,
                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
         # flip image 2:
-        cut_masked_image_2.mask = ma.nomask
+        #cut_masked_image_2.mask = ma.nomask
         flipped_c_image_2 = np.flip(cut_masked_image_2)
-        flip_mask_2 = np.flip(cut_mask_2)
-        print(cut_mask_2.shape)
-        print(flip_mask_2)
-        print(flip_mask_2.shape, flipped_c_image_2.shape)
-        flipped_cm_image_2 = ma.array(flipped_c_image_2, mask=flip_mask_2)
+        #flip_mask_2 = np.flip(cut_mask_2)
+        #print(cut_mask_2.shape)
+        #print(flip_mask_2)
+        #print(flip_mask_2.shape, flipped_c_image_2.shape)
+        #flipped_cm_image_2 = ma.array(flipped_c_image_2, mask=flip_mask_2)
 
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-        axs[0, 0].imshow(cut_masked_image_1, origin='lower')
-        axs[0, 0].set_title('masked_image 1')
-        axs[0, 1].imshow(flipped_cm_image_2, origin='lower')
-        axs[0, 1].set_title('masked_image 2')
+        axs[0, 0].imshow(cut_masked_image_2, origin='lower')
+        axs[0, 0].set_title('not flipped')
+        axs[0, 1].imshow(flipped_c_image_2, origin='lower')
+        axs[0, 1].set_title('flipped image')
 
         difference = cut_masked_image_1 - flipped_cm_image_2
         average = ma.array((cut_masked_image_1, flipped_cm_image_2)).mean(axis=0)
