@@ -362,8 +362,10 @@ class DonutFinder():
 
         if math.isclose(abs(pos_1['x']-focus[0]), abs(pos_2['x']-focus[0]), rel_tol=0.05):
             self.logger.info("we are comparing along x axis")
+            self.logger.info(f"image 1 is at {pos_1['x']-focus[0]}, image 2 is at {pos_2['x']-focus[0]}")
         elif math.isclose(abs(pos_1['y']-focus[1]), abs(pos_2['y']-focus[1]), rel_tol=0.05):
             self.logger.info('we are comparing along y axis')
+            self.logger.info(f"image 1 is at {pos_1['y']-focus[1]}, image 2 is at {pos_2['y']-focus[1]-focus[1]}")
         else:
             self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
             self.logger.error(f"positions for image 1: ({pos_1['x']-focus[0]},{pos_1['y']-focus[1]})")
