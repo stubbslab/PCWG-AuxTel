@@ -404,7 +404,7 @@ class DonutFinder():
                             outer_circle_2[0][0]-radii:outer_circle_2[0][0]+radii]
         # flip image 2:
         #cut_masked_image_2.mask = ma.nomask
-        flipped_c_image_2 = np.flip(cut_masked_image_2)
+        flipped_cm_image_2 = np.flip(cut_masked_image_2)
         #flip_mask_2 = np.flip(cut_mask_2)
         #print(cut_mask_2.shape)
         #print(flip_mask_2)
@@ -414,7 +414,7 @@ class DonutFinder():
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
         axs[0, 0].imshow(cut_masked_image_2, origin='lower')
         axs[0, 0].set_title('not flipped')
-        axs[0, 1].imshow(flipped_c_image_2, origin='lower')
+        axs[0, 1].imshow(flipped_cm_image_2, origin='lower')
         axs[0, 1].set_title('flipped image')
 
         difference = cut_masked_image_1 - flipped_cm_image_2
