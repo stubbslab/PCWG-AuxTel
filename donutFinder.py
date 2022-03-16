@@ -338,39 +338,72 @@ class DonutFinder():
 
 # What follows is a new addition to get WFS inversion
 
-    def positions(self, dataIds, focus):
+    def positions(self, dataIds, focus, rel_tol=0.05):
         fig = plt.figure(figsize=(10, 10))
-
+        position = []
         for dataId in dataIds:
             pos = self.get_efd_info(dataId)
             print(f"Sequence {dataId['seq_num']} has positions x: {pos['x']-focus[0]} y: {pos['y']-focus[1]}")
             plt.scatter(pos['x']-focus[0], pos['y']-focus[1])
+            position.append([pos['x']-focus[0], pos['y']-focus[1]])
+
+        pairs = []
+        for positions, i in enumerate(position):
+            for j in len(position)-1-i:
+                k = j+1
+                if math.isclose(positions[0], -position[k][0], rel_tol=rel_tol):
+                    if math.isclose(positions[1], position[k][1], rel_tol=rel_tol):
+                        pairs.append([i, k])
+                    elif math.isclose(positions[1], -position[k][1], rel_tol=rel_tol):
+                        pairs.append([i, k])
+                elif math.isclose(positions[1], -positions[k][1]):
+                    if math.isclose(positions[0], position[k][0]):
+                        pairs.append([i, k])
 
         fig.show()
+        return pairs
 
-    def WFSinversion(self, dataId_1, dataId_2, focus, config=None):
+    def WFSinverter(self, dataIDs, pairs, config=None):
+        ''' This is intended to take a list of pairs and process them'''
+        x_tilts = []
+        y_tilts = []
+        pixel_tilts = []
+        for pair in pairs:
+            x_tilt, y_tilt, pixel_tilt = self.WFSinversion(dataIDs[pair[0]], dataIDs[pair[1]],
+                                                           config=config, info_flag=False,
+                                                           check_pos_flag=False)
+            x_tilts.append(x_tilt)
+            y_tilts.append(y_tilt)
+            pixel_tilts.append(pixel_tilt)
+
+    def WFSinversion(self, dataId_1, dataId_2, focus, config=None, info_flag=True, check_pos_flag=True):
         ''' WORK IN PROGRESS, we work on 2 images at a time.
         '''
 
         if config is not None:
             self.config = config
-        self.logger.info(f"running with the following configuration: {self.config}")
+        if info_flag:
+            self.logger.info(f"running with the following configuration: {self.config}")
 
         # Let's start by grabbing positions:
-        pos_1 = self.get_efd_info(dataId_1)
-        pos_2 = self.get_efd_info(dataId_2)
+        if check_pos_flag:
+            pos_1 = self.get_efd_info(dataId_1)
+            pos_2 = self.get_efd_info(dataId_2)
 
-        if math.isclose(abs(pos_1['x']-focus[0]), abs(pos_2['x']-focus[0]), rel_tol=0.05):
-            self.logger.info("we are comparing along x axis")
-            self.logger.info(f"image 1 is at {pos_1['x']-focus[0]}, image 2 is at {pos_2['x']-focus[0]}")
-        elif math.isclose(abs(pos_1['y']-focus[1]), abs(pos_2['y']-focus[1]), rel_tol=0.05):
-            self.logger.info('we are comparing along y axis')
-            self.logger.info(f"image 1 is at {pos_1['y']-focus[1]}, image 2 is at {pos_2['y']-focus[1]-focus[1]}")
-        else:
-            self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
-            self.logger.error(f"positions for image 1: ({pos_1['x']-focus[0]},{pos_1['y']-focus[1]})")
-            self.logger.error(f"while for image 2: ({pos_2['x']-focus[0]},{pos_2['y']-focus[1]}")
-            raise ValueError
+            if math.isclose(abs(pos_1['x']-focus[0]), abs(pos_2['x']-focus[0]), rel_tol=0.05):
+                if info_flag:
+                    self.logger.info("we are comparing along x axis")
+                    self.logger.info(f"image 1 at {pos_1['x']-focus[0]}, image 2 at {pos_2['x']-focus[0]}")
+            elif math.isclose(abs(pos_1['y']-focus[1]), abs(pos_2['y']-focus[1]), rel_tol=0.05):
+                if info_flag:
+                    self.logger.info('we are comparing along y axis')
+                    self.logger.info(f"image 1 at {pos_1['y']-focus[1]}, image 2 at {pos_2['y']-focus[1]-focus[1]}")
+            else:
+                if info_flag:
+                    self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
+                    self.logger.error(f"positions for image 1: ({pos_1['x']-focus[0]},{pos_1['y']-focus[1]})")
+                    self.logger.error(f"while for image 2: ({pos_2['x']-focus[0]},{pos_2['y']-focus[1]}")
+                raise ValueError
 
         exp_1 = self.butler.get('quickLookExp', dataId_1)
         exp_2 = self.butler.get('quickLookExp', dataId_2)
