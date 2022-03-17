@@ -349,16 +349,15 @@ class DonutFinder():
 
         pairs = []
         for positions, i in enumerate(position):
-            for j in len(position)-1-i:
-                k = j+1
-                if math.isclose(positions[0], -position[k][0], rel_tol=rel_tol):
-                    if math.isclose(positions[1], position[k][1], rel_tol=rel_tol):
-                        pairs.append([i, k])
-                    elif math.isclose(positions[1], -position[k][1], rel_tol=rel_tol):
-                        pairs.append([i, k])
-                elif math.isclose(positions[1], -positions[k][1]):
-                    if math.isclose(positions[0], position[k][0]):
-                        pairs.append([i, k])
+            for j in range(i+1, len(position)):
+                if math.isclose(positions[0], -position[j][0], rel_tol=rel_tol):
+                    if math.isclose(positions[1], position[j][1], rel_tol=rel_tol):
+                        pairs.append([i, j])
+                    elif math.isclose(positions[1], -position[j][1], rel_tol=rel_tol):
+                        pairs.append([i, j])
+                elif math.isclose(positions[1], -position[j][1]):
+                    if math.isclose(positions[0], position[j][0]):
+                        pairs.append([i, j])
 
         fig.show()
         return pairs
@@ -371,12 +370,15 @@ class DonutFinder():
         for pair in pairs:
             x_tilt, y_tilt, pixel_tilt = self.WFSinversion(dataIDs[pair[0]], dataIDs[pair[1]],
                                                            config=config, info_flag=False,
-                                                           check_pos_flag=False)
+                                                           check_pos_flag=False, figure_flag=False)
             x_tilts.append(x_tilt)
             y_tilts.append(y_tilt)
             pixel_tilts.append(pixel_tilt)
 
-    def WFSinversion(self, dataId_1, dataId_2, focus, config=None, info_flag=True, check_pos_flag=True):
+        return x_tilts, y_tilts, pixel_tilts
+
+    def WFSinversion(self, dataId_1, dataId_2, focus, config=None, info_flag=True,
+                     check_pos_flag=True, figure_flag=True):
         ''' WORK IN PROGRESS, we work on 2 images at a time.
         '''
 
@@ -397,7 +399,7 @@ class DonutFinder():
             elif math.isclose(abs(pos_1['y']-focus[1]), abs(pos_2['y']-focus[1]), rel_tol=0.05):
                 if info_flag:
                     self.logger.info('we are comparing along y axis')
-                    self.logger.info(f"image 1 at {pos_1['y']-focus[1]}, image 2 at {pos_2['y']-focus[1]-focus[1]}")
+                    self.logger.info(f"image 1:{pos_1['y']-focus[1]}, image 2:{pos_2['y']-focus[1]-focus[1]}")
             else:
                 if info_flag:
                     self.logger.error(f"The two dataID's {dataId_1} and {dataId_2} are not compatible")
@@ -437,65 +439,66 @@ class DonutFinder():
         # flip image 2:
         flipped_cm_image_2 = np.flip(cut_masked_image_2)
 
-        fig, axs = plt.subplots(1, 3, figsize=(10, 10))
-        axs[0].imshow(cut_masked_image_1, origin='lower')
-        axs[0].set_title('image 1')
-        axs[1].imshow(cut_masked_image_2, origin='lower')
-        axs[1].set_title('image 2')
-        axs[2].imshow(flipped_cm_image_2, origin='lower')
-        axs[2].set_title('flipped image 2')
-
-        fig.show()
-
-        fig3, axs3 = plt.subplots(1, 2, figsize=(10, 10))
         difference = cut_masked_image_1 - flipped_cm_image_2
         average = ma.array((cut_masked_image_1, flipped_cm_image_2)).mean(axis=0)
-        axs3[0].imshow(difference, origin='lower')
-        axs3[0].set_title('difference')
-        axs3[1].imshow(average, origin='lower')
-        axs3[1].set_title('average')
 
-        fig3.show()
+        if figure_flag:
+            fig, axs = plt.subplots(1, 3, figsize=(10, 10))
+            axs[0].imshow(cut_masked_image_1, origin='lower')
+            axs[0].set_title('image 1')
+            axs[1].imshow(cut_masked_image_2, origin='lower')
+            axs[1].set_title('image 2')
+            axs[2].imshow(flipped_cm_image_2, origin='lower')
+            axs[2].set_title('flipped image 2')
+
+            fig.show()
+
+            fig3, axs3 = plt.subplots(1, 2, figsize=(10, 10))
+        
+            axs3[0].imshow(difference, origin='lower')
+            axs3[0].set_title('difference')
+            axs3[1].imshow(average, origin='lower')
+            axs3[1].set_title('average')
+
+            fig3.show()
 
         # Step 6 in Chris's plan
         rel_diff = ma.divide(difference, average)
 
-        summed_x = rel_diff.sum(axis=0)
-        summed_y = rel_diff.sum(axis=1)
+        summed = rel_diff.sum()
 
         # Missing step 6.25
 
-        corrected_rel_diff_x = rel_diff - summed_x
-        corrected_rel_diff_y = rel_diff - summed_y[:, None]
+        corrected_rel_diff = rel_diff - summed
 
-        fig2, ax2 = plt.subplots(1, 2, figsize=(10, 10))
-        ax2[0].imshow(corrected_rel_diff_x, origin='lower')
-        ax2[1].imshow(corrected_rel_diff_y, origin='lower')
-        ax2[0].set_title('corrected relative difference x')
-        ax2[1].set_title('corrected relative difference y')
-
-        fig2.show()
         # Missing steps 7.5
 
-        x_tilt = corrected_rel_diff_x.cumsum(axis=0)
-        y_tilt = corrected_rel_diff_y.cumsum(axis=1)
+        x_tilt = corrected_rel_diff.cumsum(axis=0)
+        y_tilt = corrected_rel_diff.cumsum(axis=1)
 
         pixel_tilt = ma.sqrt(x_tilt**2+y_tilt**2)
 
-        fig4, axs4 = plt.subplots(1, 3, figsize=(10, 10))
-        axs4[0].imshow(x_tilt, origin='lower')
-        axs4[0].set_title('x tilt')
-        axs4[1].imshow(y_tilt, origin='lower')
-        axs4[1].set_title('y tilt')
-        axs4[2].imshow(pixel_tilt)
-        axs4[2].set_title('pixel tilt')
+        if figure_flag:
+            fig4, axs4 = plt.subplots(1, 3, figsize=(10, 10))
+            axs4[1].imshow(x_tilt, origin='lower')
+            axs4[1].set_title('x tilt')
+            axs4[2].imshow(y_tilt, origin='lower')
+            axs4[2].set_title('y tilt')
+            axs4[0].imshow(corrected_rel_diff)
+            axs4[0].set_title('corrected relative difference')
 
-        fig4.show()
+            fig4.show()
+
+            fig2, ax2 = plt.subplots(1, 2, figsize=(10, 10))
+            ax2[0].imshow(pixel_tilt, origin='lower')
+            ax2[1].hist(pixel_tilt[~pixel_tilt.mask].flatten())
+
+            fig2.show()
 
         # Saving figures
-        fig.savefig('initialimages.png')
-        fig2.savefig('relative_differences.png')
-        fig3.savefig('difference_and_averages.png')
-        fig4.savefig('tilts.png')
+        # fig.savefig('initialimages.png')
+        # fig2.savefig('pixel_tilt.png')
+        # fig3.savefig('difference_and_averages.png')
+        # fig4.savefig('tilts.png')
 
         return x_tilt, y_tilt, pixel_tilt
