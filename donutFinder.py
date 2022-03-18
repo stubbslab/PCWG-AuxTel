@@ -165,9 +165,9 @@ class DonutFinder():
         int_image = self._detectMask(norm_image)
 
         params_big = {'param1': 10, 'param2': 10, 'minRadius': int(self.config['outerRadius']),
-                      'maxRadius': int(1.2*self.config['outerRadius'])}
+                      'maxRadius': int(2*self.config['outerRadius'])}
         params_small = {'param1': 30, 'param2': 10, 'minRadius': int(self.config['innerRadius']),
-                        'maxRadius': int(1.2*self.config['innerRadius'])}
+                        'maxRadius': int(2*self.config['innerRadius'])}
 
         outer_circle = np.empty(3)
         inner_circle = np.empty(3)
