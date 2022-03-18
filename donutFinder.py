@@ -345,23 +345,24 @@ class DonutFinder():
         for dataId in dataIds:
             pos = self.get_efd_info(dataId)
             print(f"Sequence {dataId['seq_num']} has positions x: {pos['x']-focus[0]} y: {pos['y']-focus[1]}")
-            plt.scatter(pos['x']-focus[0], pos['y']-focus[1])
-            position.append([pos['x']-focus[0], pos['y']-focus[1], dataId['seq_num']])
+            print(f" z: {pos['z']}")
+            plt.scatter(pos['x']-focus[0], pos['y']-focus[1], pos['z'])
+            position.append([pos['x']-focus[0], pos['y']-focus[1], pos['z'], dataId['seq_num']])
 
-        pairs = []
-        for i in range(len(position)):
-            for j in range(i+1, len(position)):
-                if math.isclose(position[i][0], -position[j][0], rel_tol=rel_tol):
-                    if math.isclose(position[i][1], position[j][1], rel_tol=rel_tol, abs_tol=0.05):
-                        pairs.append([i, j])
-                    elif math.isclose(position[i][1], -position[j][1], rel_tol=rel_tol):
-                        pairs.append([i, j])
-                elif math.isclose(position[i][1], -position[j][1]):
-                    if math.isclose(position[i][0], position[j][0], rel_tol=rel_tol, abs_tol=0.05):
-                        pairs.append([i, j])
+        # pairs = []
+        # for i in range(len(position)):
+        #     for j in range(i+1, len(position)):
+        #         if math.isclose(position[i][0], -position[j][0], rel_tol=rel_tol):
+        #             if math.isclose(position[i][1], position[j][1], rel_tol=rel_tol, abs_tol=0.05):
+        #                 pairs.append([i, j])
+        #             elif math.isclose(position[i][1], -position[j][1], rel_tol=rel_tol):
+        #                 pairs.append([i, j])
+        #         elif math.isclose(position[i][1], -position[j][1]):
+        #             if math.isclose(position[i][0], position[j][0], rel_tol=rel_tol, abs_tol=0.05):
+        #                 pairs.append([i, j])
 
         fig.show()
-        return pairs, position
+        return position
 
     def WFSinverter(self, dataIDs, pairs, config=None):
         ''' This is intended to take a list of pairs and process them'''
