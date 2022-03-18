@@ -345,9 +345,9 @@ class DonutFinder():
         for dataId in dataIds:
             pos = self.get_efd_info(dataId)
             print(f"Sequence {dataId['seq_num']} has positions x: {pos['x']-focus[0]} y: {pos['y']-focus[1]}")
-            print(f" z: {pos['z']}")
-            plt.scatter(pos['x']-focus[0], pos['y']-focus[1], pos['z'])
-            position.append([pos['x']-focus[0], pos['y']-focus[1], pos['z'], dataId['seq_num']])
+            print(f" z: {pos['z']-focus[2]}")
+            plt.plot(pos['z']-focus[2])
+            position.append([pos['x']-focus[0], pos['y']-focus[1], pos['z']-focus[2], dataId['seq_num']])
 
         # pairs = []
         # for i in range(len(position)):
