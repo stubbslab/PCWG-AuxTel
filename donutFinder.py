@@ -368,7 +368,7 @@ class DonutFinder():
         y_tilts = []
         pixel_tilts = []
         for pair in pairs:
-            x_tilt, y_tilt, pixel_tilt = self.WFSinversion(dataIDs[pair[0]], dataIDs[pair[1]],
+            x_tilt, y_tilt, pixel_tilt = self.WFSinversion(dataIDs[pair[0]], dataIDs[pair[1]], [0, 0],
                                                            config=config, info_flag=False,
                                                            check_pos_flag=False, figure_flag=False)
             x_tilts.append(x_tilt)
@@ -484,7 +484,7 @@ class DonutFinder():
             axs4[1].set_title('x tilt')
             axs4[2].imshow(y_tilt, origin='lower')
             axs4[2].set_title('y tilt')
-            axs4[0].imshow(corrected_rel_diff)
+            axs4[0].imshow(corrected_rel_diff, origin='lower')
             axs4[0].set_title('corrected relative difference')
 
             fig4.show()
