@@ -348,15 +348,15 @@ class DonutFinder():
             position.append([pos['x']-focus[0], pos['y']-focus[1]])
 
         pairs = []
-        for positions, i in enumerate(position):
+        for i in range(len(position)):
             for j in range(i+1, len(position)):
-                if math.isclose(positions[0], -position[j][0], rel_tol=rel_tol):
-                    if math.isclose(positions[1], position[j][1], rel_tol=rel_tol):
+                if math.isclose(position[i][0], -position[j][0], rel_tol=rel_tol):
+                    if math.isclose(position[i][1], position[j][1], rel_tol=rel_tol):
                         pairs.append([i, j])
-                    elif math.isclose(positions[1], -position[j][1], rel_tol=rel_tol):
+                    elif math.isclose(position[i][1], -position[j][1], rel_tol=rel_tol):
                         pairs.append([i, j])
-                elif math.isclose(positions[1], -position[j][1]):
-                    if math.isclose(positions[0], position[j][0]):
+                elif math.isclose(position[i][1], -position[j][1]):
+                    if math.isclose(position[i][0], position[j][0]):
                         pairs.append([i, j])
 
         fig.show()
