@@ -348,8 +348,8 @@ class DonutFinder():
             position.append([pos['x']-focus[0], pos['y']-focus[1], dataId['seq_num']])
 
         pairs = []
-        for i in range(len(dataId)):
-            for j in range(i+1, len(dataId)):
+        for i in range(len(position)):
+            for j in range(i+1, len(position)):
                 if math.isclose(position[i][0], -position[j][0], rel_tol=rel_tol):
                     if math.isclose(position[i][1], position[j][1], rel_tol=rel_tol):
                         pairs.append([i, j])
