@@ -105,7 +105,7 @@ class DonutFinder():
 
         return self.results
 
-    def findCircle(self, dataId, useCutout=False, config=None):
+    def findCircle(self, dataId, useCutout=False, config=None, info_flag=True):
         """This function does all the tricks to find the circle for a single
         exposure and returns the inner and outer circles for it.
 
@@ -133,7 +133,8 @@ class DonutFinder():
         """
         if config is not None:
             self.config = config
-        self.logger.info(f"running with the following configuration: {self.config}")
+        if info_flag:
+            self.logger.info(f"running with the following configuration: {self.config}")
 
         path = os.path.join(self.path, f"detail_plots{dataId['day_obs']}", f"seq{dataId['seq_num']:05}")
 
@@ -423,8 +424,8 @@ class DonutFinder():
         masked_image_2 = ma.array(image_2, mask=mask_2)
 
         # Getting the details for the outer circle
-        outer_circle_1, _, _ = self.findCircle(dataId_1)
-        outer_circle_2, _, _ = self.findCircle(dataId_2)
+        outer_circle_1, _, _ = self.findCircle(dataId_1, info_flag=False)
+        outer_circle_2, _, _ = self.findCircle(dataId_2, info_flag=False)
 
         # Selecting the larger of the two radii to use for cutting the donuts
         # out with.
