@@ -199,7 +199,7 @@ class DonutFinder():
     def _examine(self, exp):
         '''This function has been deprecated. It is only called if we need to
         cutout the donut from a larger set of data.'''
-        imexam = ImageExaminer(exp, boxHalfSize=self.config["halfbox"], centroidself.config["centroid"])
+        imexam = ImageExaminer(exp, boxHalfSize=self.config["halfbox"], centroid=self.config["centroid"])
         return imexam
 
     def _cutOut(self, imexam):
