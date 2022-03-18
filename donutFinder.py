@@ -352,12 +352,12 @@ class DonutFinder():
         for i in range(len(position)):
             for j in range(i+1, len(position)):
                 if math.isclose(position[i][0], -position[j][0], rel_tol=rel_tol):
-                    if math.isclose(position[i][1], position[j][1], rel_tol=rel_tol):
+                    if math.isclose(position[i][1], position[j][1], rel_tol=rel_tol, abs_tol=0.05):
                         pairs.append([i, j])
                     elif math.isclose(position[i][1], -position[j][1], rel_tol=rel_tol):
                         pairs.append([i, j])
                 elif math.isclose(position[i][1], -position[j][1]):
-                    if math.isclose(position[i][0], position[j][0]):
+                    if math.isclose(position[i][0], position[j][0], rel_tol=rel_tol, abs_tol=0.05):
                         pairs.append([i, j])
 
         fig.show()
@@ -375,6 +375,7 @@ class DonutFinder():
             x_tilts.append(x_tilt)
             y_tilts.append(y_tilt)
             pixel_tilts.append(pixel_tilt)
+            self.logger.info(f"finished running the pair {pair}")
 
         return x_tilts, y_tilts, pixel_tilts
 
