@@ -6,7 +6,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
-from summit_utils import ImageExaminer, butlerUtils
+from lsst.summit.utils import ImageExaminer, butlerUtils
 from lsst_efd_client import EfdClient
 import os
 import logging
