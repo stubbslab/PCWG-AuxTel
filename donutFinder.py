@@ -14,7 +14,7 @@ import math
 
 
 class DonutFinder():
-    def __init__(self, doPlot=False, path=None, butlerLoc='NCSA',
+    def __init__(self, doPlot=False, path=None,
                  efdClient='summit_efd'):
         self.doPlot = doPlot
         if not path:
@@ -22,7 +22,7 @@ class DonutFinder():
         else:
             self.path = path
         # instantiating the butler and efd clients
-        self.butler = butlerUtils.makeDefaultLatissButler(butlerLoc)
+        self.butler = butlerUtils.makeDefaultLatissButler()
         self.efdClient = EfdClient(efdClient)
 
         # Making a logger
