@@ -6,8 +6,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
-from lsst.rapid.analysis.imageExaminer import ImageExaminer
-import lsst.rapid.analysis.butlerUtils as butlerUtils
+from summit_utils import ImageExaminer, butlerUtils
 from lsst_efd_client import EfdClient
 import os
 import logging
@@ -346,12 +345,24 @@ class DonutFinder():
             pos = self.get_efd_info(dataId)
             print(f"Sequence {dataId['seq_num']} has positions x: {pos['x']-focus[0]} y: {pos['y']-focus[1]}")
             print(f" z: {pos['z']-focus[2]}")
-            plt.plot(pos['z']-focus[2])
             position.append([pos['x']-focus[0], pos['y']-focus[1], pos['z']-focus[2], dataId['seq_num']])
 
-        # pairs = []
-        # for i in range(len(position)):
-        #     for j in range(i+1, len(position)):
+        pairs = []
+        double_images = []
+        for i in range(len(position)):
+            for j in range(i+1, len(position)):
+                images = []
+                if math.isclose(position[i][0], position[j][0],
+                                rel_tol=rel_tol) and math.isclose(position[i][1],position[j][1], rel_tol=rel_tol):
+                    if math.isclose(position[i][2], -position[j][2], rel_tol=rel_tol):
+                        pairs.append([i,j])
+                    elif math.isclose(position[i][2], position[j][2], rel_tol=rel_tol):
+                        images.append(j)
+                double_images.append([i,j])
+
+
+                    
+
         #         if math.isclose(position[i][0], -position[j][0], rel_tol=rel_tol):
         #             if math.isclose(position[i][1], position[j][1], rel_tol=rel_tol, abs_tol=0.05):
         #                 pairs.append([i, j])
@@ -394,7 +405,7 @@ class DonutFinder():
         if check_pos_flag:
             pos_1 = self.get_efd_info(dataId_1)
             pos_2 = self.get_efd_info(dataId_2)
-
+            
             if math.isclose(abs(pos_1['x']-focus[0]), abs(pos_2['x']-focus[0]), rel_tol=0.05):
                 if info_flag:
                     self.logger.info("we are comparing along x axis")
